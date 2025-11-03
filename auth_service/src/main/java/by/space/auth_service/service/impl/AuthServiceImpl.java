@@ -1,0 +1,62 @@
+package by.space.auth_service.service.impl;
+
+import by.space.auth_service.enums.Role;
+import by.space.auth_service.model.dto.AuthRequestDto;
+import by.space.auth_service.model.dto.RegistrationRequestDto;
+import by.space.auth_service.model.dto.ResponseDto;
+import by.space.auth_service.model.dto.UserDto;
+import by.space.auth_service.modules.UserClient;
+import by.space.auth_service.service.AuthService;
+import by.space.auth_service.service.JwtService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class AuthServiceImpl implements AuthService {
+    private final PasswordEncoder passwordEncoder;
+    private final UserClient userClient;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+
+    @Override
+    public ResponseDto authenticate(final AuthRequestDto request) {
+        authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                request.getEmail(),
+                request.getPassword()
+            )
+        );
+
+        final UserDto user = userClient.getUser(request.getEmail());
+        final String token = jwtService.generateAccessToken(user);
+
+        return ResponseDto.builder()
+            .accessToken(token)
+            .userId(user.getId())
+            .role(user.getRole())
+            .build();
+    }
+
+    @Override
+    public ResponseDto signUp(final RegistrationRequestDto request) {
+        Role role = request.getRole() != null ? request.getRole() : Role.LISTENER;
+        final UserDto user = UserDto
+            .builder()
+            .username(request.getEmail())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .name(request.getUsername())
+            .role(role)
+            .build();
+        userClient.saveUser(user);
+
+        final String token = jwtService.generateAccessToken(user);
+
+        return ResponseDto.builder()
+            .accessToken(token)
+            .build();
+    }
+}
