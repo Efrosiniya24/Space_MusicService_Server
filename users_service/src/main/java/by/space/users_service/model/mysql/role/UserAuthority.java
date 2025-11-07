@@ -2,6 +2,7 @@ package by.space.users_service.model.mysql.role;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@IdClass(UserAuthorityId.class)
 public class UserAuthority {
     @Id
     private Long userId;
