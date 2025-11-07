@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: users_service
+    name: users-service
   datasource:
     url: jdbc:mysql://localhost:3306/users
     password: 1111

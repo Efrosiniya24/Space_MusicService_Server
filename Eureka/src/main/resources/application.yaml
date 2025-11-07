@@ -11,6 +11,9 @@ eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
+  cloud:
+    discovery:
+      enabled: false
 
 
 logging:
