@@ -1,7 +1,7 @@
-package by.space.auth_service.model.dto;
+package by.space.users_service.model.dto;
 
-import by.space.auth_service.enums.GenderType;
-import by.space.auth_service.enums.Role;
+import by.space.users_service.enums.GenderType;
+import by.space.users_service.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,10 +15,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDto {
+public class UserAuthDto {
     private Long id;
     private String email;
-    private String password;
     private String name;
     private String phone;
     private boolean isDeleted;

@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,22 +27,25 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
-        @Override
-        public String generateAccessToken(final UserDto user) {
-            final Map<String, Object> claims = new HashMap<>();
-            claims.put("role", user.getRole());
-            claims.put("uid", user.getId());
-            claims.put("email", user.getUsername());
+    @Override
+    public String generateAccessToken(final UserDto user) {
+        final Map<String, Object> claims = new HashMap<>();
 
-            return Jwts
-                .builder()
-                .claims(claims)
-                .subject(user.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                .compact();
-        }
+        final List<String> roles = user.getRoles().stream()
+            .map(Enum::name).collect(Collectors.toList());
+        claims.put("roles", roles);
+        claims.put("uid", user.getId());
+        claims.put("email", user.getEmail());
+
+        return Jwts
+            .builder()
+            .claims(claims)
+            .subject(user.getEmail())
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+            .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+            .compact();
+    }
 
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);

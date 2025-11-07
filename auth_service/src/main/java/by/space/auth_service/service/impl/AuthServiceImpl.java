@@ -37,23 +37,22 @@ public class AuthServiceImpl implements AuthService {
         return ResponseDto.builder()
             .accessToken(token)
             .userId(user.getId())
-            .role(user.getRole())
+            .role(user.getRoles())
             .build();
     }
 
     @Override
     public ResponseDto signUp(final RegistrationRequestDto request) {
-        Role role = request.getRole() != null ? request.getRole() : Role.LISTENER;
-        final UserDto user = UserDto
+        final Role role = request.getRole() != null ? request.getRole() : Role.LISTENER;
+        final RegistrationRequestDto user = RegistrationRequestDto
             .builder()
-            .username(request.getEmail())
+            .email(request.getEmail())
             .password(passwordEncoder.encode(request.getPassword()))
-            .name(request.getUsername())
             .role(role)
             .build();
-        userClient.saveUser(user);
 
-        final String token = jwtService.generateAccessToken(user);
+        final UserDto userDto = userClient.saveUser(user);
+        final String token = jwtService.generateAccessToken(userDto);
 
         return ResponseDto.builder()
             .accessToken(token)

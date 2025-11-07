@@ -27,14 +27,16 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "email")
-    private String username;
+    @Column(unique = true, nullable = false)
+    private String email;
+    @Column(nullable = false)
     private String password;
     private String name;
     private String phone;
-    private boolean isDeleted;
+    private boolean isDeleted = false;
+    @Column(nullable = false)
     private LocalDateTime createdAt;
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
     private GenderType gender;
     private LocalDate dateOfBirth;

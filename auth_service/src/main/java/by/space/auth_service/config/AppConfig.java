@@ -31,7 +31,7 @@ public class AppConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> (UserDetails) userClient.getUser(username);
+        return email -> (UserDetails) userClient.getUser(email);
     }
 
     @Bean

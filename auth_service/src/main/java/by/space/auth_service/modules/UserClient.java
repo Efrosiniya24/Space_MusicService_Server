@@ -1,5 +1,6 @@
 package by.space.auth_service.modules;
 
+import by.space.auth_service.model.dto.RegistrationRequestDto;
 import by.space.auth_service.model.dto.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,5 +15,5 @@ public interface UserClient {
     UserDto getUser(@RequestParam("username") String email);
 
     @PostMapping("/makeUser")
-    UserDto saveUser(@RequestBody UserDto userDto);
+    UserDto saveUser(@RequestBody RegistrationRequestDto userDto);
 }

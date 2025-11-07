@@ -1,6 +1,6 @@
-package by.space.auth_service.model.dto;
+package by.space.users_service.model.dto;
 
-import by.space.auth_service.enums.Role;
+import by.space.users_service.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
