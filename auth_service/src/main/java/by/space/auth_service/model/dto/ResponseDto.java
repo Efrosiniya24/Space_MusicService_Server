@@ -15,5 +15,5 @@ import java.util.List;
 public class ResponseDto {
     private String accessToken;
     private Long userId;
-    private List<Role> role;
+    private List<Role> roles;
 }

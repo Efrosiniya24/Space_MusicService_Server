@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "users-service")
+@FeignClient(name = "USERS-SERVICE")
 public interface UserClient {
 
-    @GetMapping("/user")
-    UserDto getUser(@RequestParam("username") String email);
+    @PostMapping("/getUser")
+    UserDto getUser(@RequestParam("email") String email);
 
     @PostMapping("/makeUser")
     UserDto saveUser(@RequestBody RegistrationRequestDto userDto);

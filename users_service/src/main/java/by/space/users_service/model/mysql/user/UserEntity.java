@@ -34,9 +34,7 @@ public class UserEntity {
     private String name;
     private String phone;
     private boolean isDeleted = false;
-    @Column(nullable = false)
     private LocalDateTime createdAt;
-    @Column(nullable = false)
     private LocalDateTime updatedAt;
     private GenderType gender;
     private LocalDate dateOfBirth;

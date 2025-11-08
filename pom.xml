@@ -36,5 +36,6 @@
         <module>auth_service</module>
         <module>users_service</module>
         <module>Eureka</module>
+        <module>api-gateway</module>
     </modules>
 </project>

@@ -17,8 +17,8 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/getUser")
-    public ResponseEntity<UserAuthDto> getUser(@RequestParam String username) {
-        return ResponseEntity.ok(userService.getUser(username));
+    public ResponseEntity<UserAuthDto> getUser(@RequestParam String email) {
+        return ResponseEntity.ok(userService.getUser(email));
     }
 
 

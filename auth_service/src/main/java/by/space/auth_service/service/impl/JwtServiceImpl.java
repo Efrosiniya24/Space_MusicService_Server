@@ -31,10 +31,13 @@ public class JwtServiceImpl implements JwtService {
     public String generateAccessToken(final UserDto user) {
         final Map<String, Object> claims = new HashMap<>();
 
-        final List<String> roles = user.getRoles().stream()
-            .map(Enum::name).collect(Collectors.toList());
-        claims.put("roles", roles);
-        claims.put("uid", user.getId());
+        var roles = (user.getRoles() == null || user.getRoles().isEmpty())
+            ? java.util.List.of(by.space.auth_service.enums.Role.LISTENER)
+            : user.getRoles();
+
+        var roleNames = roles.stream().map(Enum::name).toList();
+        claims.put("roles", roleNames);
+        claims.put("id", user.getId());
         claims.put("email", user.getEmail());
 
         return Jwts

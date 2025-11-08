@@ -20,4 +20,6 @@ public interface AuthService {
      * @return token with details about user
      */
     ResponseDto signUp(RegistrationRequestDto request);
+
+    boolean validateToken(String token);
 }

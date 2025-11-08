@@ -8,11 +8,16 @@ import by.space.auth_service.model.dto.UserDto;
 import by.space.auth_service.modules.UserClient;
 import by.space.auth_service.service.AuthService;
 import by.space.auth_service.service.JwtService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.security.SignatureException;
+import java.util.Collections;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
         return ResponseDto.builder()
             .accessToken(token)
             .userId(user.getId())
-            .role(user.getRoles())
+            .roles(user.getRoles())
             .build();
     }
 
@@ -56,6 +61,20 @@ public class AuthServiceImpl implements AuthService {
 
         return ResponseDto.builder()
             .accessToken(token)
+            .userId(userDto.getId())
+            .roles(Collections.singletonList(user.getRole()))
             .build();
+    }
+
+    @Override
+    public boolean validateToken(String token) {
+        try {
+            var claims = jwtService.extractAllClaims(token);
+            System.out.println("Token claims: " + claims);
+            return claims.getExpiration().after(new Date());
+        } catch (Exception e) {
+            System.out.println("Token validation error: " + e.getMessage());
+            return false;
+        }
     }
 }

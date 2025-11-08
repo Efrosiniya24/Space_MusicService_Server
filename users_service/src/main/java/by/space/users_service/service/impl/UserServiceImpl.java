@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -39,9 +41,19 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public UserAuthDto makeUser(final RegistrationRequestDto request) {
-        final UserEntity user = userRepository.save(userMapper.mapToUserEntity(request));
-        userRoleRepository.save(setUserAuthority(user.getId()));
-        return userMapper.mapToUserAuthDto(user);
+        final UserEntity user = UserEntity.builder()
+            .email(request.getEmail())
+            .password(request.getPassword())
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        final UserEntity newUser = userRepository.save(user);
+
+        userRoleRepository.save(setUserAuthority(newUser.getId()));
+
+        UserAuthDto userAuthDto = userMapper.mapToUserAuthDto(newUser);
+        userAuthDto.setRoles(Collections.singletonList(Role.LISTENER));
+        return userAuthDto;
     }
 
     private UserAuthority setUserAuthority(final Long userId) {
