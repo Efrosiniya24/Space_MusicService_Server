@@ -18,9 +18,10 @@ import java.util.List;
 public class UserAuthDto {
     private Long id;
     private String email;
+    private String password;
     private String name;
     private String phone;
-    private boolean isDeleted;
+    private boolean deleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private GenderType gender;

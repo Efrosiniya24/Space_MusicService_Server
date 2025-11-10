@@ -8,14 +8,12 @@ import by.space.auth_service.model.dto.UserDto;
 import by.space.auth_service.modules.UserClient;
 import by.space.auth_service.service.AuthService;
 import by.space.auth_service.service.JwtService;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.security.SignatureException;
 import java.util.Collections;
 import java.util.Date;
 

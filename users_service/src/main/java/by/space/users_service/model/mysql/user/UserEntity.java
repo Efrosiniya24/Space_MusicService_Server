@@ -33,7 +33,8 @@ public class UserEntity {
     private String password;
     private String name;
     private String phone;
-    private boolean isDeleted = false;
+    @Column(name = "is_deleted")
+    private boolean deleted = false;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private GenderType gender;

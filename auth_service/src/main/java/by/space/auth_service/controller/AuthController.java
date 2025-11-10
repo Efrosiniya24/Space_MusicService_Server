@@ -22,7 +22,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signIn")
-    public ResponseEntity<ResponseDto> authorize(@RequestBody final AuthRequestDto requestDto){
+    public ResponseEntity<ResponseDto> authorize(@RequestBody final AuthRequestDto requestDto) {
         return ResponseEntity.ok(authService.authenticate(requestDto));
     }
 
@@ -32,9 +32,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(){
+    public ResponseEntity<Void> logout() {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication != null){
+        if (authentication != null) {
             SecurityContextHolder.clearContext();
         }
         return ResponseEntity.ok().build();
@@ -42,11 +42,9 @@ public class AuthController {
 
     @PostMapping("/validate")
     public ResponseEntity<String> validateToken(@RequestHeader("Authorization") String authHeader) {
-        System.out.println("validation");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid Authorization header");
         }
-        System.out.println("recived token " + authHeader);
         String token = authHeader.replace("Bearer ", "");
         boolean isValid = authService.validateToken(token);
 
