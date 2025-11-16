@@ -18,15 +18,6 @@
         </processorPath>
         <module name="auth_service" />
       </profile>
-      <profile name="Annotation profile for api-gateway" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
-        </processorPath>
-        <module name="api-gateway" />
-      </profile>
       <profile name="Annotation profile for space_back" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -39,6 +30,16 @@
         </processorPath>
         <module name="users_service" />
       </profile>
+      <profile name="Annotation profile for media-content" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="api-gateway" />
+        <module name="media-content" />
+      </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
@@ -46,6 +47,7 @@
       <module name="Eureka" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
       <module name="auth_service" options="-parameters" />
+      <module name="media-content" options="-parameters" />
       <module name="users_service" options="-parameters" />
     </option>
   </component>
