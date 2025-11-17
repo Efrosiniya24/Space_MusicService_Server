@@ -1,5 +1,5 @@
 spring:
   application:
-    name: preferences-service
+    name: preference_service
 server:
   port: 8084
