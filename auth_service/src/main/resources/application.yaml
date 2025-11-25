@@ -15,5 +15,5 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
   instance:
-    prefer-ip-address: true
-    ip-address: 127.0.0.1
+    hostname: auth-service
+    prefer-ip-address: false

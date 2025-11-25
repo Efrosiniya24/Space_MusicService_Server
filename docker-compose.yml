@@ -1,0 +1,174 @@
+services:
+  users:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: 1111
+      MYSQL_DATABASE: users
+    volumes:
+      - db_users_data:/var/lib/mysql
+    ports:
+      - "3303:3306"
+    networks:
+      - space-net
+
+  media:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: 1111
+      MYSQL_DATABASE: media
+    volumes:
+      - db_media_data:/var/lib/mysql
+    ports:
+      - "3308:3306"
+    networks:
+      - space-net
+
+  preferences:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: 1111
+      MYSQL_DATABASE: preferences
+    volumes:
+      - db_pref_data:/var/lib/mysql
+    ports:
+      - "3309:3306"
+    networks:
+      - space-net
+
+  eureka:
+    build:
+      context: ./Eureka
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - space-net
+
+  users-service:
+    build:
+      context: .
+      dockerfile: users_service/Dockerfile
+    container_name: users_service
+    depends_on:
+      - eureka
+      - users
+
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://users:3306/users
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1111
+    networks:
+      - space-net
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth_service/Dockerfile
+    container_name: auth_service
+    depends_on:
+      - eureka
+      - users-service
+
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - JWT_SECRET=EtWBmqNcSkSZT5U1BWVwYTJaGyZz+buud4N0y1Ef4+PD+ofgl69e1a/d1SrrzyUTC5tYx714GyjdvATH+cYZy3lm2bbt9zwxVPTLzoJ0zhmc3qP9eyDXXP4sqyFL9ADhW72FCBuxXKwE22M3by3oIhOBsQ3XxeopZrwOldu+jx5HA4UJBLfOnh6n8OAnJqTomeJTH/mEX34koeP6j+EO92r3YA1BMggD6qs2xceFBOh2y4pds+8rhU1qree10oXg1D4QvWFoQKJ15kUZRbKkgtPskFSo3Rbrc+6sONyaWzBUOFhhE5ZmhhEzEGAw6Rac67JDYc1YzvIcskry1EO7mMtDeq9JUsUGNFm2TjXf+6E=
+    networks:
+      - space-net
+
+  media-content:
+    build:
+      context: .
+      dockerfile: media-content/Dockerfile
+    container_name: media-content
+    depends_on:
+      - eureka
+      - media
+      - users-service
+      - auth-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://media:3306/media
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1111
+    networks:
+      - space-net
+
+  preference-service:
+    build:
+      context: .
+      dockerfile: preference_service/Dockerfile
+    container_name: preference_service
+    depends_on:
+      - preferences
+      - eureka
+      - users-service
+      - auth-service
+      - media-content
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://preferences:3306/preferences
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=1111
+    networks:
+      - space-net
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    depends_on:
+      - eureka
+      - users-service
+      - auth-service
+      - media-content
+      - preference-service
+
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+    networks:
+      - space-net
+
+  frontend:
+    build:
+      context: ../space_front
+    container_name: space_front
+    depends_on:
+      - api-gateway
+    ports:
+      - "5173:3000"
+    networks:
+      - space-net
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./data/minio:/data
+    networks:
+      - space-net
+
+networks:
+  space-net:
+
+volumes:
+  db_users_data:
+  db_media_data:
+  db_pref_data:

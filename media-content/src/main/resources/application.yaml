@@ -1,5 +1,26 @@
 spring:
   application:
-    name: media-content
+    name: MEDIA-CONTENT
+  datasource:
+    url: jdbc:mysql://localhost:3306/media
+    password: 1111
+    username: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
 server:
   port: 8082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: media-content
+    prefer-ip-address: false
