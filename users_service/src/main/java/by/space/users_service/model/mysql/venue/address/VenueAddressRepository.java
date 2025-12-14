@@ -1,4 +1,4 @@
-package by.space.users_service.model.mysql.venue;
+package by.space.users_service.model.mysql.venue.address;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

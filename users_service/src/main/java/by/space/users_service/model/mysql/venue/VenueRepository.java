@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface VenueRepository extends JpaRepository<VenueEntity, Long> {
     List<VenueEntity> findAllByStatus(final StatusVenue status);
+
 }

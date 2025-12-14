@@ -86,12 +86,17 @@ services:
       - media
       - users-service
       - auth-service
+      - minio
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:mysql://media:3306/media
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=1111
+      - MINIO_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=space24
+      - MINIO_SECRET_KEY=34fhj84wjfelw
+      - MINIO_BUCKET=space-media
     networks:
       - space-net
 
@@ -150,8 +155,8 @@ services:
     image: minio/minio
     container_name: minio
     environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: minio123
+      MINIO_ROOT_USER: space24
+      MINIO_ROOT_PASSWORD: 34fhj84wjfelw
     command: server /data --console-address ":9001"
     ports:
       - "9000:9000"

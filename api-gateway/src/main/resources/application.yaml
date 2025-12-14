@@ -42,6 +42,8 @@ spring:
               uri: lb://MEDIA-CONTENT
               predicates:
                 - Path=/space/media/**
+              filters:
+                - RewritePath=/space/media/(?<segment>.*), /${segment}
 
             - id: media-swagger
               uri: lb://MEDIA-CONTENT
@@ -88,7 +90,7 @@ springdoc:
         url: /space/users/v3/api-docs
       - name: auth-service
         url: /space/user/auth/v3/api-docs
-      - name: media
+      - name: media-content
         url: /space/media/v3/api-docs
       - name: preferences
         url: /preferences/v3/api-docs

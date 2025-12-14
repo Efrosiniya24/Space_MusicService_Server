@@ -1,8 +1,11 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: MEDIA-CONTENT
   datasource:
-    url: jdbc:mysql://localhost:3306/media
+    url: jdbc:mysql://media:3306/media
     password: 1111
     username: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -11,9 +14,6 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
-
-server:
-  port: 8082
 
 eureka:
   client:
@@ -26,7 +26,7 @@ eureka:
     prefer-ip-address: false
 
 minio:
-  url: http://localhost:9000
-  access-key: minioadmin
-  secret-key: minioadmin123
+  url: http://minio:9000
+  access-key: space24
+  secret-key: 34fhj84wjfelw
   bucket: space-media

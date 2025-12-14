@@ -1,10 +1,6 @@
-package by.space.users_service.model.mysql.venue;
+package by.space.users_service.model.mysql.venue.address;
 
-import by.space.users_service.enums.StatusVenue;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,26 +14,20 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "venue")
+@Table(name = "venue_address")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class VenueEntity {
+public class VenueAddressEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true, nullable = false)
-    private String name;
-    private String email;
-    private String cover;
-    private String description;
-    private String urlWebSite;
-    private String phone;
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private StatusVenue status;
+    private String country;
+    private String city;
+    private String addressCity;
+    private Long venueId;
     private boolean deleted = false;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
