@@ -15,13 +15,52 @@ spring:
               predicates:
                 - Path=/space/user/auth/**
               filters:
-                - RewritePath=/space/user/auth/(?<segment>.*), /user/auth/${segment}
+                - RewritePath=/space/user/auth/(?<segment>.*), /${segment}
+
+            - id: auth-swagger
+              uri: lb://AUTH-SERVICE
+              predicates:
+                - Path=/space/user/auth/v3/api-docs/**,/space/user/auth/swagger-ui/**,/space/user/auth/swagger-ui.html
+              filters:
+                  - RewritePath=/space/user/auth/(?<segment>.*), /${segment}
+
             - id: users-service
               uri: lb://USERS-SERVICE
               predicates:
                 - Path=/space/users/**
               filters:
-                - StripPrefix=1
+                - RewritePath=/space/users/(?<segment>.*), /${segment}
+
+            - id: users-swagger
+              uri: lb://USERS-SERVICE
+              predicates:
+                - Path=/space/users/v3/api-docs/**,/space/users/swagger-ui/**,/space/users/swagger-ui.html
+              filters:
+                  - RewritePath=/space/users/(?<segment>.*), /${segment}
+
+            - id: media
+              uri: lb://MEDIA-CONTENT
+              predicates:
+                - Path=/space/media/**
+
+            - id: media-swagger
+              uri: lb://MEDIA-CONTENT
+              predicates:
+                - Path=/space/media/v3/api-docs/**,/space/media/swagger-ui/**,/space/media/swagger-ui.html
+              filters:
+                - RewritePath=/space/media/(?<segment>.*), /${segment}
+
+            - id: preferences
+              uri: lb://PREFERENCE-SERVICE
+              predicates:
+                - Path=/preferences/**
+
+            - id: preferences-swagger
+              uri: lb://PREFERENCE-SERVICE
+              predicates:
+                - Path=/preferences/v3/api-docs/**,/preferences/swagger-ui/**,/preferences/swagger-ui.html
+              filters:
+                - RewritePath=/preferences/(?<segment>.*), /${segment}
 
 eureka:
   client:
@@ -41,3 +80,19 @@ logging:
     org.springframework.cloud.gateway: DEBUG
     reactor.netty.http.client: DEBUG
     reactor.netty.transport: DEBUG
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: users-service
+        url: /space/users/v3/api-docs
+      - name: auth-service
+        url: /space/user/auth/v3/api-docs
+      - name: media
+        url: /space/media/v3/api-docs
+      - name: preferences
+        url: /preferences/v3/api-docs
+    path: /swagger-ui.html
+    enabled: true
+  api-docs:
+    enabled: true

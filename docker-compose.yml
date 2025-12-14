@@ -6,8 +6,6 @@ services:
       MYSQL_DATABASE: users
     volumes:
       - db_users_data:/var/lib/mysql
-    ports:
-      - "3303:3306"
     networks:
       - space-net
 
@@ -18,8 +16,6 @@ services:
       MYSQL_DATABASE: media
     volumes:
       - db_media_data:/var/lib/mysql
-    ports:
-      - "3308:3306"
     networks:
       - space-net
 
@@ -30,8 +26,8 @@ services:
       MYSQL_DATABASE: preferences
     volumes:
       - db_pref_data:/var/lib/mysql
-    ports:
-      - "3309:3306"
+#    ports:
+#      - "3310:3306"
     networks:
       - space-net
 

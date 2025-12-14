@@ -21,7 +21,13 @@ class SecurityConfig {
             })
             .authorizeExchange(ex -> ex
                 .pathMatchers("/actuator/health", "/actuator/info").permitAll()
-                .pathMatchers("/space/user/auth/**").permitAll()
+                .pathMatchers("/space/**").permitAll()
+                .pathMatchers(
+                    "/webjars/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**"
+                ).permitAll()
                 .anyExchange().authenticated())
             .oauth2ResourceServer(o -> o.jwt(j -> j.jwtDecoder(jwtDecoder)))
             .build();

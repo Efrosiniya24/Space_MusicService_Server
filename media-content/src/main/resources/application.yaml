@@ -24,3 +24,9 @@ eureka:
   instance:
     hostname: media-content
     prefer-ip-address: false
+
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin123
+  bucket: space-media
