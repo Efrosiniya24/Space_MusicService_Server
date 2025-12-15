@@ -1,17 +1,20 @@
 package by.space.users_service.service.impl;
 
 import by.space.users_service.enums.StatusVenue;
+import by.space.users_service.feign.MediaClient;
 import by.space.users_service.mapper.VenueMapper;
 import by.space.users_service.model.dto.VenueAddressDto;
 import by.space.users_service.model.dto.VenueDto;
 import by.space.users_service.model.mysql.venue.VenueEntity;
 import by.space.users_service.model.mysql.venue.VenueRepository;
-import by.space.users_service.model.mysql.venue.address.VenueAddressEntity;
 import by.space.users_service.model.mysql.venue.address.VenueAddressRepository;
+import by.space.users_service.service.AddressService;
 import by.space.users_service.service.VenueCuratorService;
 import by.space.users_service.service.VenueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,8 @@ public class VenueServiceImpl implements VenueService {
     private final VenueAddressRepository venueAddressRepository;
     private final VenueMapper venueMapper;
     private final VenueCuratorService venueCuratorService;
+    private final AddressService addressService;
+    private final MediaClient mediaClient;
 
     @Override
     public List<VenueDto> getAllVenues() {
@@ -45,21 +50,19 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
-    public VenueDto createVenue(final VenueDto venueDto) {
+    @Transactional
+    public VenueDto createVenue(final VenueDto venueDto, final MultipartFile image) {
         venueDto.setStatus(StatusVenue.PENDING);
 
         final VenueEntity venue = venueMapper.mapToVenueEntity(venueDto);
         final VenueEntity savedVenue = venueRepository.save(venue);
 
-        final List<VenueAddressEntity> addressEntity = venueMapper.mapToVenueAddressEntity(venueDto.getAddresses());
-        addressEntity.forEach(address -> {
-            address.setVenueId(savedVenue.getId());
-        });
+        final List<VenueAddressDto> addresses = addressService.addAddresses(venueDto.getAddresses(), savedVenue.getId());
 
-        final List<VenueAddressEntity> savedAddresses = venueAddressRepository.saveAll(addressEntity);
+        mediaClient.addImage(image, venueDto.getOwnerId());
 
         final VenueDto result = venueMapper.mapToVenueDto(savedVenue);
-        result.setAddresses(venueMapper.mapToVenueAddressDto(savedAddresses));
+        result.setAddresses(addresses);
 
         return result;
     }

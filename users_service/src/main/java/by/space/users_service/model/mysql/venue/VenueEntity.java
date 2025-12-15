@@ -38,6 +38,7 @@ public class VenueEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private StatusVenue status;
+    private Long coverId;
     private boolean deleted = false;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;

@@ -3,6 +3,7 @@ package by.space.users_service.service;
 import by.space.users_service.enums.StatusVenue;
 import by.space.users_service.model.dto.VenueAddressDto;
 import by.space.users_service.model.dto.VenueDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,9 +34,10 @@ public interface VenueService {
      * creating of venue
      *
      * @param venueDto venue data
+     * @param file     cover of venue
      * @return saved venue data
      */
-    VenueDto createVenue(VenueDto venueDto);
+    VenueDto createVenue(VenueDto venueDto, MultipartFile file);
 
     /**
      * method for getting venue from db

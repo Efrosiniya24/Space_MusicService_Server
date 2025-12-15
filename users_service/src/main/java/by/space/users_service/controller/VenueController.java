@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,8 +27,9 @@ public class VenueController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<VenueDto> createVenue(@RequestBody VenueDto venueDto) {
-        return ResponseEntity.ok(venueService.createVenue(venueDto));
+    public ResponseEntity<VenueDto> createVenue(@RequestBody final VenueDto venueDto,
+                                                @RequestParam final MultipartFile file) {
+        return ResponseEntity.ok(venueService.createVenue(venueDto, file));
     }
 
     @GetMapping("/all/{id}")
