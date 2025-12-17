@@ -22,13 +22,13 @@ public interface VenueService {
      */
     List<VenueDto> getAllVenuesByStatus(StatusVenue statusVenue);
 
-    /**
-     * method of getting all active venues addresses
-     *
-     * @param venueId id of venues
-     * @return list of addresses
-     */
-    List<VenueAddressDto> getAllActiveVenueAddresses(Long venueId);
+//    /**
+//     * method of getting all active venues addresses
+//     *
+//     * @param venueId id of venues
+//     * @return list of addresses
+//     */
+//    List<VenueAddressDto> getAllActiveVenueAddresses(Long venueId);
 
     /**
      * creating of venue

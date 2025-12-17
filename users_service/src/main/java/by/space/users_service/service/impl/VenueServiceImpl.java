@@ -33,7 +33,7 @@ public class VenueServiceImpl implements VenueService {
     public List<VenueDto> getAllVenues() {
         final List<VenueDto> venues = getAllVenuesByStatus(StatusVenue.CONFIRMED);
         venues.forEach(venue -> {
-            final List<VenueAddressDto> addresses = getAllActiveVenueAddresses(venue.getId());
+            final List<VenueAddressDto> addresses = addressService.getAllActiveVenueAddresses(venue.getId());
             venue.setAddresses(addresses);
         });
         return venues;
@@ -43,11 +43,11 @@ public class VenueServiceImpl implements VenueService {
     public List<VenueDto> getAllVenuesByStatus(final StatusVenue statusVenue) {
         return venueMapper.mapToVenueDto(venueRepository.findAllByStatus(statusVenue));
     }
-
-    @Override
-    public List<VenueAddressDto> getAllActiveVenueAddresses(final Long venueId) {
-        return venueMapper.mapToVenueAddressDto(venueAddressRepository.findAllByVenueId(venueId));
-    }
+//
+//    @Override
+//    public List<VenueAddressDto> getAllActiveVenueAddresses(final Long venueId) {
+//        return venueMapper.mapToVenueAddressDto(venueAddressRepository.findAllByVenueId(venueId));
+//    }
 
     @Override
     @Transactional
