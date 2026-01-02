@@ -21,7 +21,8 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers(
                     "/getUser",
-                    "/makeUser"
+                    "/makeUser",
+                    "/venue/create"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

@@ -69,7 +69,6 @@
         </pluginManagement>
 
         <plugins>
-            <!-- “включаем” плагин для всех модулей -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>

@@ -15,14 +15,14 @@ spring:
               predicates:
                 - Path=/space/user/auth/**
               filters:
-                - RewritePath=/space/user/auth/(?<segment>.*), /${segment}
+                - RewritePath=/space/user/auth/(?<segment>.*), /user/auth/${segment}
 
             - id: auth-swagger
               uri: lb://AUTH-SERVICE
               predicates:
                 - Path=/space/user/auth/v3/api-docs/**,/space/user/auth/swagger-ui/**,/space/user/auth/swagger-ui.html
               filters:
-                  - RewritePath=/space/user/auth/(?<segment>.*), /${segment}
+                  - RewritePath=/space/user/auth/(?<segment>.*), /user/auth/${segment}
 
             - id: users-service
               uri: lb://USERS-SERVICE
