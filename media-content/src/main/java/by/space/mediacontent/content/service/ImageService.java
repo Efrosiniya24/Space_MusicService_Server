@@ -1,6 +1,6 @@
-package by.space.mediacontent.content.application.service;
+package by.space.mediacontent.content.service;
 
-import by.space.mediacontent.content.application.dto.ImageDto;
+import by.space.mediacontent.content.dto.ImageDto;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ImageService {

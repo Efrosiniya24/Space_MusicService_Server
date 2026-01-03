@@ -1,6 +1,6 @@
-package by.space.mediacontent.content.application.service.impl;
+package by.space.mediacontent.content.service.impl;
 
-import by.space.mediacontent.content.application.service.MinioStorageService;
+import by.space.mediacontent.content.service.MinioStorageService;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;

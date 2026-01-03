@@ -1,4 +1,4 @@
-package by.space.mediacontent.content.application.util;
+package by.space.mediacontent.content.util;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;

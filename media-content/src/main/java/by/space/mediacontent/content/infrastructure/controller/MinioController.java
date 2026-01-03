@@ -1,6 +1,6 @@
 package by.space.mediacontent.content.infrastructure.controller;
 
-import by.space.mediacontent.content.application.service.MinioStorageService;
+import by.space.mediacontent.content.service.MinioStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;

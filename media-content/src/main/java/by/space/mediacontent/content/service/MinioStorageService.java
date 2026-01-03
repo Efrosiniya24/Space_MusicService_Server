@@ -1,4 +1,4 @@
-package by.space.mediacontent.content.application.service;
+package by.space.mediacontent.content.service;
 
 import org.springframework.web.multipart.MultipartFile;
 

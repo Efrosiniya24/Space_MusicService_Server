@@ -1,7 +1,7 @@
 package by.space.mediacontent.content.infrastructure.controller;
 
-import by.space.mediacontent.content.application.dto.ImageDto;
-import by.space.mediacontent.content.application.service.ImageService;
+import by.space.mediacontent.content.dto.ImageDto;
+import by.space.mediacontent.content.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

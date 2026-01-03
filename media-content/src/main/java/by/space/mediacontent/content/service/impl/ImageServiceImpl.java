@@ -1,12 +1,12 @@
-package by.space.mediacontent.content.application.service.impl;
+package by.space.mediacontent.content.service.impl;
 
-import by.space.mediacontent.content.application.dto.ImageDto;
-import by.space.mediacontent.content.application.service.ImageService;
-import by.space.mediacontent.content.application.service.MinioStorageService;
-import by.space.mediacontent.content.application.util.ObjectKeyGenerator;
 import by.space.mediacontent.content.domain.entity.ImageEntity;
+import by.space.mediacontent.content.dto.ImageDto;
 import by.space.mediacontent.content.infrastructure.mapper.ImageMapper;
 import by.space.mediacontent.content.infrastructure.repository.ImageRepository;
+import by.space.mediacontent.content.service.ImageService;
+import by.space.mediacontent.content.service.MinioStorageService;
+import by.space.mediacontent.content.util.ObjectKeyGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

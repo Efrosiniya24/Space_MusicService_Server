@@ -1,11 +1,24 @@
 package by.space.mediacontent.content.application.service.impl;
 
-import by.space.mediacontent.content.application.dto.ImageDto;
-import by.space.mediacontent.content.application.service.MinioStorageService;
-import by.space.mediacontent.content.application.util.ObjectKeyGenerator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import by.space.mediacontent.content.domain.entity.ImageEntity;
+import by.space.mediacontent.content.dto.ImageDto;
 import by.space.mediacontent.content.infrastructure.mapper.ImageMapper;
 import by.space.mediacontent.content.infrastructure.repository.ImageRepository;
+import by.space.mediacontent.content.service.MinioStorageService;
+import by.space.mediacontent.content.service.impl.ImageServiceImpl;
+import by.space.mediacontent.content.util.ObjectKeyGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,16 +30,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class ImageServiceImplTest {
 
-    @Mock ImageMapper imageMapper;
-    @Mock MinioStorageService minioStorageService;
-    @Mock ImageRepository imageRepository;
-    @Mock MultipartFile file;
+    @Mock
+    ImageMapper imageMapper;
+    @Mock
+    MinioStorageService minioStorageService;
+    @Mock
+    ImageRepository imageRepository;
+    @Mock
+    MultipartFile file;
 
     @Test
     void addImage_generates_key_uploads_saves_entity_and_returns_dto() {

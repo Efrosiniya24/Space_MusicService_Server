@@ -1,4 +1,4 @@
-package by.space.mediacontent.content.application.dto;
+package by.space.mediacontent.content.dto;
 
 import lombok.Builder;
 import lombok.Data;
