@@ -14,8 +14,8 @@ import by.space.users_service.service.VenueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,15 +43,10 @@ public class VenueServiceImpl implements VenueService {
     public List<VenueDto> getAllVenuesByStatus(final StatusVenue statusVenue) {
         return venueMapper.mapToVenueDto(venueRepository.findAllByStatus(statusVenue));
     }
-//
-//    @Override
-//    public List<VenueAddressDto> getAllActiveVenueAddresses(final Long venueId) {
-//        return venueMapper.mapToVenueAddressDto(venueAddressRepository.findAllByVenueId(venueId));
-//    }
 
     @Override
     @Transactional
-    public VenueDto createVenue(final VenueDto venueDto, final MultipartFile image) {
+    public VenueDto createVenue(final VenueDto venueDto) {
         venueDto.setStatus(StatusVenue.PENDING);
 
         final VenueEntity venue = venueMapper.mapToVenueEntity(venueDto);
@@ -59,10 +54,9 @@ public class VenueServiceImpl implements VenueService {
 
         final List<VenueAddressDto> addresses = addressService.addAddresses(venueDto.getAddresses(), savedVenue.getId());
 
-        mediaClient.addImage(image, venueDto.getOwnerId());
-
         final VenueDto result = venueMapper.mapToVenueDto(savedVenue);
         result.setAddresses(addresses);
+        result.setCreatedAt(LocalDateTime.now());
 
         return result;
     }
@@ -86,8 +80,8 @@ public class VenueServiceImpl implements VenueService {
         final int size = venuesId.size();
         final List<VenueDto> venues = new ArrayList<>(size);
 
-        for (int i = 0; i < size; i++) {
-            venues.add(getVenue(venuesId.get(i)));
+        for (Long aLong : venuesId) {
+            venues.add(getVenue(aLong));
         }
 
         return venues;

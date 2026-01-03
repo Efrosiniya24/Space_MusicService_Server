@@ -135,7 +135,7 @@ class VenueServiceImplTest {
         when(venueMapper.mapToVenueDto(savedEntity)).thenReturn(mappedResultDto);
 
         // when
-        VenueDto result = venueService.createVenue(inputDto, image);
+        VenueDto result = venueService.createVenue(inputDto);
 
         // then
         assertThat(result).isSameAs(mappedResultDto);

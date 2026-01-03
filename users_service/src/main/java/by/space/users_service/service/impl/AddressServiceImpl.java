@@ -8,6 +8,7 @@ import by.space.users_service.service.AddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -22,6 +23,7 @@ public class AddressServiceImpl implements AddressService {
         final List<VenueAddressEntity> addressEntity = venueAddressMapper.mapToVenueAddressEntity(addresses);
         addressEntity.forEach(address -> {
             address.setVenueId(venueId);
+            address.setCreatedAt(LocalDateTime.now());
         });
 
         final List<VenueAddressEntity> savedAddresses = venueAddressRepository.saveAll(addressEntity);

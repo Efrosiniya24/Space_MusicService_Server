@@ -1,9 +1,7 @@
 package by.space.users_service.service;
 
 import by.space.users_service.enums.StatusVenue;
-import by.space.users_service.model.dto.VenueAddressDto;
 import by.space.users_service.model.dto.VenueDto;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,22 +20,13 @@ public interface VenueService {
      */
     List<VenueDto> getAllVenuesByStatus(StatusVenue statusVenue);
 
-//    /**
-//     * method of getting all active venues addresses
-//     *
-//     * @param venueId id of venues
-//     * @return list of addresses
-//     */
-//    List<VenueAddressDto> getAllActiveVenueAddresses(Long venueId);
-
     /**
      * creating of venue
      *
      * @param venueDto venue data
-     * @param file     cover of venue
      * @return saved venue data
      */
-    VenueDto createVenue(VenueDto venueDto, MultipartFile file);
+    VenueDto createVenue(VenueDto venueDto);
 
     /**
      * method for getting venue from db
