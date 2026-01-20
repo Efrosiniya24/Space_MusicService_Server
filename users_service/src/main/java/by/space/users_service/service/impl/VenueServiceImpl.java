@@ -9,6 +9,7 @@ import by.space.users_service.model.mysql.venue.VenueEntity;
 import by.space.users_service.model.mysql.venue.VenueRepository;
 import by.space.users_service.model.mysql.venue.address.VenueAddressRepository;
 import by.space.users_service.service.AddressService;
+import by.space.users_service.service.CurrentUserProvider;
 import by.space.users_service.service.VenueCuratorService;
 import by.space.users_service.service.VenueService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class VenueServiceImpl implements VenueService {
     private final VenueCuratorService venueCuratorService;
     private final AddressService addressService;
     private final MediaClient mediaClient;
+    private final CurrentUserProvider currentUserProvider;
 
     @Override
     public List<VenueDto> getAllVenues() {
@@ -47,7 +49,11 @@ public class VenueServiceImpl implements VenueService {
     @Override
     @Transactional
     public VenueDto createVenue(final VenueDto venueDto) {
+        final Long ownerId = currentUserProvider.getUserId();
+
         venueDto.setStatus(StatusVenue.PENDING);
+        venueDto.setCreatedAt(LocalDateTime.now());
+        venueDto.setOwnerId(ownerId);
 
         final VenueEntity venue = venueMapper.mapToVenueEntity(venueDto);
         final VenueEntity savedVenue = venueRepository.save(venue);
@@ -56,7 +62,6 @@ public class VenueServiceImpl implements VenueService {
 
         final VenueDto result = venueMapper.mapToVenueDto(savedVenue);
         result.setAddresses(addresses);
-        result.setCreatedAt(LocalDateTime.now());
 
         return result;
     }
