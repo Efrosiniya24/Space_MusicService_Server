@@ -1,4 +1,4 @@
-package by.space.mediacontent.content.infrastructure.mapper;
+package by.space.mediacontent.content.mapper;
 
 import by.space.mediacontent.content.domain.entity.ImageEntity;
 import by.space.mediacontent.content.dto.ImageDto;

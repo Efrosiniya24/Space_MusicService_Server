@@ -1,4 +1,4 @@
-package by.space.mediacontent.content.infrastructure.controller;
+package by.space.mediacontent.content.controller;
 
 import by.space.mediacontent.content.dto.ImageDto;
 import by.space.mediacontent.content.service.ImageService;

@@ -1,4 +1,4 @@
-package by.space.mediacontent.content.infrastructure.repository;
+package by.space.mediacontent.content.repository;
 
 import by.space.mediacontent.content.domain.entity.ImageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

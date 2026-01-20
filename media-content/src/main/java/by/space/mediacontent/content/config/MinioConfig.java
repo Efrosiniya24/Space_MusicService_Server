@@ -1,4 +1,4 @@
-package by.space.mediacontent.content.infrastructure.config;
+package by.space.mediacontent.content.config;
 
 import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Value;
