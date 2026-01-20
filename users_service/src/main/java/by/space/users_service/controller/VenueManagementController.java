@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/system/venue")
+@RequestMapping("/space/system/venue")
 public class VenueManagementController {
 
     private final VenueManagementService venueManagementService;
