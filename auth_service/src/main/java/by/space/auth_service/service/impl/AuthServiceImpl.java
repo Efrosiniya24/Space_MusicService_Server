@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +47,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseDto signUp(final RegistrationRequestDto request) {
+        if (!checkPassword(request.getPassword(), request.getRepeatPassword())) {
+            throw new IllegalStateException("Passwords don't match");
+        }
+
         final Role role = request.getRole() != null ? request.getRole() : Role.LISTENER;
         final RegistrationRequestDto user = RegistrationRequestDto
             .builder()
@@ -68,11 +73,13 @@ public class AuthServiceImpl implements AuthService {
     public boolean validateToken(String token) {
         try {
             var claims = jwtService.extractAllClaims(token);
-            System.out.println("Token claims: " + claims);
             return claims.getExpiration().after(new Date());
         } catch (Exception e) {
-            System.out.println("Token validation error: " + e.getMessage());
             return false;
         }
+    }
+
+    private boolean checkPassword(final String firstPassword, final String secondPassword) {
+        return Objects.equals(firstPassword, secondPassword);
     }
 }
