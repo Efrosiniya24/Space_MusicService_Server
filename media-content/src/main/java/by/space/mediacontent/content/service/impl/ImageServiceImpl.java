@@ -1,9 +1,11 @@
 package by.space.mediacontent.content.service.impl;
 
 import by.space.mediacontent.content.domain.entity.ImageEntity;
+import by.space.mediacontent.content.domain.entity.ImageVenueEntity;
 import by.space.mediacontent.content.dto.ImageDto;
-import by.space.mediacontent.content.infrastructure.mapper.ImageMapper;
-import by.space.mediacontent.content.infrastructure.repository.ImageRepository;
+import by.space.mediacontent.content.mapper.ImageMapper;
+import by.space.mediacontent.content.repository.ImageRepository;
+import by.space.mediacontent.content.repository.ImageVenueRepository;
 import by.space.mediacontent.content.service.ImageService;
 import by.space.mediacontent.content.service.MinioStorageService;
 import by.space.mediacontent.content.util.ObjectKeyGenerator;
@@ -21,6 +23,7 @@ public class ImageServiceImpl implements ImageService {
     private final ImageMapper imageMapper;
     private final MinioStorageService minioStorageService;
     private final ImageRepository imageRepository;
+    private final ImageVenueRepository imageVenueRepository;
 
     @Value("${minio.bucket}")
     private String bucket;
@@ -46,5 +49,17 @@ public class ImageServiceImpl implements ImageService {
                 .build());
 
         return imageMapper.toImageDto(savedImage);
+    }
+
+    @Transactional
+    @Override
+    public void addVenueCover(final MultipartFile file, final Long ownerId, final Long venueId) {
+        final ImageDto image = addImage(file, ownerId);
+        final ImageVenueEntity imageVenue = ImageVenueEntity
+            .builder()
+            .imageId(image.getId())
+            .venueId(venueId)
+            .build();
+        imageVenueRepository.save(imageVenue);
     }
 }
