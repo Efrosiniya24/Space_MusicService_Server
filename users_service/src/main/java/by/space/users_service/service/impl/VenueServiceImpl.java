@@ -49,11 +49,8 @@ public class VenueServiceImpl implements VenueService {
     @Override
     @Transactional
     public VenueDto createVenue(final VenueDto venueDto) {
-        final Long ownerId = currentUserProvider.getUserId();
-
         venueDto.setStatus(StatusVenue.PENDING);
         venueDto.setCreatedAt(LocalDateTime.now());
-        venueDto.setOwnerId(ownerId);
 
         final VenueEntity venue = venueMapper.mapToVenueEntity(venueDto);
         final VenueEntity savedVenue = venueRepository.save(venue);
@@ -85,8 +82,8 @@ public class VenueServiceImpl implements VenueService {
         final int size = venuesId.size();
         final List<VenueDto> venues = new ArrayList<>(size);
 
-        for (Long aLong : venuesId) {
-            venues.add(getVenue(aLong));
+        for (final Long venueId : venuesId) {
+            venues.add(getVenue(venueId));
         }
 
         return venues;

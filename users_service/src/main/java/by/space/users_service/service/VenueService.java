@@ -47,8 +47,8 @@ public interface VenueService {
     /**
      * method for getting all active user venues
      *
-     * @param id user id
+     * @param userId user id
      * @return all active user venues
      */
-    List<VenueDto> getAllUserVenue(Long id);
+    List<VenueDto> getAllUserVenue(Long userId);
 }
