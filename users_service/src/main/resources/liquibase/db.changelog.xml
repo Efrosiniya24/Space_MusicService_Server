@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <property name="type.boolean" value="bit(1)"/>
+
+    <changeSet id="RENAME_COLUMN_NAME" author="e.zinkovskaya">
+        <renameColumn
+                oldColumnName="user_owner"
+                columnDataType="${type.boolean}"
+                newColumnName="user_admin"
+                tableName="venue_curator"/>
+    </changeSet>
+
+    <changeSet id="DELETE_OWNER_ID_COLUMN" author="e.zinkovskaya">
+        <dropColumn
+                tableName="venue"
+                columnName="owner_id"/>
+    </changeSet>
+
+</databaseChangeLog>

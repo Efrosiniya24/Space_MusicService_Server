@@ -25,6 +25,6 @@ public class VenueCuratorsEntity {
     private Long curatorId;
     private Long venueId;
     private Long addressId;
-    private Boolean userOwner;
+    private Boolean isUserAdmin;
     private boolean deleted = false;
 }
