@@ -34,4 +34,11 @@ public class AddressServiceImpl implements AddressService {
     public List<VenueAddressDto> getAllActiveVenueAddresses(final Long venueId) {
         return venueAddressMapper.mapToVenueAddressDto(venueAddressRepository.findAllByVenueId(venueId));
     }
+
+    @Override
+    public List<Long> getIdOfAddresses(final List<VenueAddressDto> addresses) {
+        return addresses.stream()
+            .map(VenueAddressDto::getId)
+            .toList();
+    }
 }

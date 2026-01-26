@@ -56,10 +56,13 @@ public class VenueServiceImpl implements VenueService {
         final VenueEntity savedVenue = venueRepository.save(venue);
 
         final List<VenueAddressDto> addresses = addressService.addAddresses(venueDto.getAddresses(), savedVenue.getId());
+        final List<Long> addressesId = addressService.getIdOfAddresses(addresses);
+
+        venueCuratorService.createVenueCurator(
+            venueDto.getOwnerId(), savedVenue.getId(), addressesId, true);
 
         final VenueDto result = venueMapper.mapToVenueDto(savedVenue);
         result.setAddresses(addresses);
-
         return result;
     }
 

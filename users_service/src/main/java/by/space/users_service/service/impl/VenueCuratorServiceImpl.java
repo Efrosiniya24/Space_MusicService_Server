@@ -7,6 +7,7 @@ import by.space.users_service.service.VenueCuratorService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,5 +24,20 @@ public class VenueCuratorServiceImpl implements VenueCuratorService {
         return venues.stream()
             .map(VenueCuratorsEntity::getVenueId)
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public void createVenueCurator(final Long curatorId, final Long venueId, final List<Long> addressesId, final Boolean isUserAdmin) {
+        final List<VenueCuratorsEntity> venueCurators = new ArrayList<>();
+        addressesId.forEach(address -> {
+            venueCurators.add(VenueCuratorsEntity
+                .builder()
+                .curatorId(curatorId)
+                .venueId(venueId)
+                .addressId(address)
+                .isUserAdmin(isUserAdmin)
+                .build());
+        });
+        venueCuratorRepository.saveAll(venueCurators);
     }
 }

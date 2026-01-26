@@ -16,10 +16,4 @@
                 tableName="venue_curator"/>
     </changeSet>
 
-    <changeSet id="DELETE_OWNER_ID_COLUMN" author="e.zinkovskaya">
-        <dropColumn
-                tableName="venue"
-                columnName="owner_id"/>
-    </changeSet>
-
 </databaseChangeLog>
