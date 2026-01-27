@@ -10,7 +10,10 @@ import java.util.List;
 public interface VenueCuratorRepository extends JpaRepository<VenueCuratorsEntity, Long> {
 
     @Query("SELECT vc FROM VenueCuratorsEntity vc " +
-        "JOIN VenueEntity v ON vc.id = v.id " +
-        "WHERE vc.deleted = false AND v.deleted = false AND v.status = 'CONFIRMED' ")
+        "JOIN VenueEntity v ON vc.venueId = v.id " +
+        "WHERE vc.deleted = false " +
+        "AND v.deleted = false " +
+        "AND v.status = 'CONFIRMED' " +
+        "AND vc.curatorId = :id ")
     List<VenueCuratorsEntity> findAllByCuratorIdAndDeletedIsFalse(Long id);
 }

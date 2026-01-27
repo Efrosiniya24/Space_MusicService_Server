@@ -51,4 +51,12 @@ public interface VenueService {
      * @return all active user venues
      */
     List<VenueDto> getAllUserVenue(Long userId);
+
+    /**
+     * method for getting venues by id
+     *
+     * @param venuesId venues id
+     * @return list of venues
+     */
+    List<VenueDto> getVenuesById(List<Long> venuesId);
 }

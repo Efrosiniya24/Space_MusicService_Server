@@ -41,4 +41,10 @@ public class AddressServiceImpl implements AddressService {
             .map(VenueAddressDto::getId)
             .toList();
     }
+
+    @Override
+    public List<VenueAddressDto> getAllAddressesByIds(final List<Long> addressesIds) {
+        final List<VenueAddressEntity> addressEntity = venueAddressRepository.findAllById(addressesIds);
+        return venueAddressMapper.mapToVenueAddressDto(addressEntity);
+    }
 }

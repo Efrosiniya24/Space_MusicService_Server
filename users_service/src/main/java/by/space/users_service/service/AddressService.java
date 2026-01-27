@@ -29,4 +29,12 @@ public interface AddressService {
      * @return id of venue addresses
      */
     List<Long> getIdOfAddresses(List<VenueAddressDto> addresses);
+
+    /**
+     * getting all addresses by ids
+     *
+     * @param addressesIds addresses ids
+     * @return addresses dto
+     */
+    List<VenueAddressDto> getAllAddressesByIds(List<Long> addressesIds);
 }

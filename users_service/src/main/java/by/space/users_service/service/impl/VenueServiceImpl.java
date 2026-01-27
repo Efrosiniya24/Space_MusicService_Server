@@ -1,15 +1,13 @@
 package by.space.users_service.service.impl;
 
 import by.space.users_service.enums.StatusVenue;
-import by.space.users_service.feign.MediaClient;
 import by.space.users_service.mapper.VenueMapper;
 import by.space.users_service.model.dto.VenueAddressDto;
+import by.space.users_service.model.dto.VenueCuratorDto;
 import by.space.users_service.model.dto.VenueDto;
 import by.space.users_service.model.mysql.venue.VenueEntity;
 import by.space.users_service.model.mysql.venue.VenueRepository;
-import by.space.users_service.model.mysql.venue.address.VenueAddressRepository;
 import by.space.users_service.service.AddressService;
-import by.space.users_service.service.CurrentUserProvider;
 import by.space.users_service.service.VenueCuratorService;
 import by.space.users_service.service.VenueService;
 import lombok.RequiredArgsConstructor;
@@ -19,17 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class VenueServiceImpl implements VenueService {
     private final VenueRepository venueRepository;
-    private final VenueAddressRepository venueAddressRepository;
     private final VenueMapper venueMapper;
     private final VenueCuratorService venueCuratorService;
     private final AddressService addressService;
-    private final MediaClient mediaClient;
-    private final CurrentUserProvider currentUserProvider;
 
     @Override
     public List<VenueDto> getAllVenues() {
@@ -80,15 +77,40 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public List<VenueDto> getAllUserVenue(final Long userId) {
-        final List<Long> venuesId = venueCuratorService.getAllActiveUserVenue(userId);
-
-        final int size = venuesId.size();
-        final List<VenueDto> venues = new ArrayList<>(size);
-
-        for (final Long venueId : venuesId) {
-            venues.add(getVenue(venueId));
+        final List<VenueCuratorDto> curatorVenues = venueCuratorService.getAllActiveUserVenue(userId);
+        if (curatorVenues.isEmpty()) {
+            return List.of();
         }
 
+        final List<Long> venueId = curatorVenues.stream()
+            .map(VenueCuratorDto::getVenueId)
+            .distinct()
+            .collect(Collectors.toList());
+        final List<VenueDto> venues = getVenuesById(venueId);
+        final Map<Long, VenueDto> venueMap = venues.stream()
+            .peek(v -> v.setAddresses(new ArrayList<>()))
+            .collect(Collectors.toMap(VenueDto::getId, v -> v));
+
+        final List<Long> addressesId = curatorVenues.stream()
+            .map(VenueCuratorDto::getAddressId)
+            .distinct()
+            .toList();
+        final List<VenueAddressDto> address = addressService.getAllAddressesByIds(addressesId);
+        final Map<Long, VenueAddressDto> addressMap = address.stream()
+            .collect(Collectors.toMap(VenueAddressDto::getId, v -> v));
+
+        curatorVenues.forEach(venueCuratorDto -> {
+            final VenueDto venueDto = venueMap.get(venueCuratorDto.getVenueId());
+            final VenueAddressDto addressDto = addressMap.get(venueCuratorDto.getAddressId());
+
+            venueDto.getAddresses().add(addressDto);
+        });
+
         return venues;
+    }
+
+    @Override
+    public List<VenueDto> getVenuesById(final List<Long> venuesId) {
+        return venueMapper.mapToVenueDto(venueRepository.findAllById(venuesId));
     }
 }
