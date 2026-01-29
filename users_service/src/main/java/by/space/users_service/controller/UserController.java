@@ -17,13 +17,13 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/getUser")
-    public ResponseEntity<UserAuthDto> getUser(@RequestParam("email") String email) {
+    public ResponseEntity<UserAuthDto> getUser(@RequestParam("email") final String email) {
         return ResponseEntity.ok(userService.getUser(email));
     }
 
 
     @PostMapping("/makeUser")
-    public ResponseEntity<UserAuthDto> makeUser(@RequestBody RegistrationRequestDto requestDto) {
+    public ResponseEntity<UserAuthDto> makeUser(@RequestBody final RegistrationRequestDto requestDto) {
         return ResponseEntity.ok(userService.makeUser(requestDto));
     }
 }

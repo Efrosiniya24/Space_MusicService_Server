@@ -4,10 +4,11 @@ import by.space.users_service.enums.Role;
 import by.space.users_service.mapper.UserMapper;
 import by.space.users_service.model.dto.RegistrationRequestDto;
 import by.space.users_service.model.dto.UserAuthDto;
-import by.space.users_service.model.mysql.role.UserAuthority;
+import by.space.users_service.model.mysql.role.AuthorityRepository;
 import by.space.users_service.model.mysql.role.UserRoleRepository;
 import by.space.users_service.model.mysql.user.UserEntity;
 import by.space.users_service.model.mysql.user.UserRepository;
+import by.space.users_service.service.RoleService;
 import by.space.users_service.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final UserMapper userMapper;
-
-    private final Long DEFAULT_ROLE = 1L;
+    private final AuthorityRepository authorityRepository;
+    private final RoleService roleService;
 
     @Override
     public UserAuthDto getUser(final String email) {
@@ -49,17 +50,32 @@ public class UserServiceImpl implements UserService {
 
         final UserEntity newUser = userRepository.save(user);
 
-        userRoleRepository.save(setUserAuthority(newUser.getId()));
+        if (isUserExist(request.getEmail())) {
+            throw new RuntimeException("User with email " + request.getEmail() + " already exists");
+        }
 
-        UserAuthDto userAuthDto = userMapper.mapToUserAuthDto(newUser);
+        roleService.addUserAuthority(newUser.getId(), Role.valueOf(request.getRole()));
+
+        final UserAuthDto userAuthDto = userMapper.mapToUserAuthDto(newUser);
         userAuthDto.setRoles(Collections.singletonList(Role.LISTENER));
         return userAuthDto;
     }
 
-    private UserAuthority setUserAuthority(final Long userId) {
-        final UserAuthority userAuthority = new UserAuthority();
-        userAuthority.setUserId(userId);
-        userAuthority.setRoleId(DEFAULT_ROLE);
-        return userAuthority;
+    @Override
+    public UserAuthDto addRole(final String email, final String role) {
+        final UserAuthDto user = getUser(email);
+        final Role newRole = Role.valueOf(role);
+        if (user.getRoles().contains(newRole)) {
+            throw new RuntimeException("User with email " + email + " is already exists");
+        }
+
+        roleService.addUserAuthority(user.getId(), Role.valueOf(role));
+        return null;
+    }
+
+    @Override
+    public boolean isUserExist(final String email) {
+        final UserEntity user = userRepository.findByEmail(email).orElse(null);
+        return user != null;
     }
 }

@@ -19,4 +19,21 @@ public interface UserService {
      * @return savedUser
      */
     UserAuthDto makeUser(RegistrationRequestDto userAuthDto);
+
+    /**
+     * add additional role, for example, after registration with a different role
+     *
+     * @param email user email
+     * @param role  new role
+     * @return updated user
+     */
+    UserAuthDto addRole(String email, String role);
+
+    /**
+     * check if user exists
+     *
+     * @param email user email
+     * @return is user exists
+     */
+    boolean isUserExist(String email);
 }
