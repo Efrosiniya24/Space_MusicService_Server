@@ -1,6 +1,7 @@
 package by.space.auth_service.service.impl;
 
 import by.space.auth_service.enums.Role;
+import by.space.auth_service.exception.UserAlreadyExistsException;
 import by.space.auth_service.model.dto.AuthRequestDto;
 import by.space.auth_service.model.dto.RegistrationRequestDto;
 import by.space.auth_service.model.dto.ResponseDto;
@@ -8,6 +9,7 @@ import by.space.auth_service.model.dto.UserDto;
 import by.space.auth_service.modules.UserClient;
 import by.space.auth_service.service.AuthService;
 import by.space.auth_service.service.JwtService;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,23 +52,26 @@ public class AuthServiceImpl implements AuthService {
         if (!checkPassword(request.getPassword(), request.getRepeatPassword())) {
             throw new IllegalStateException("Passwords don't match");
         }
+        try {
+            final Role role = request.getRole() != null ? request.getRole() : Role.LISTENER;
+            final RegistrationRequestDto user = RegistrationRequestDto
+                .builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(role)
+                .build();
 
-        final Role role = request.getRole() != null ? request.getRole() : Role.LISTENER;
-        final RegistrationRequestDto user = RegistrationRequestDto
-            .builder()
-            .email(request.getEmail())
-            .password(passwordEncoder.encode(request.getPassword()))
-            .role(role)
-            .build();
+            final UserDto userDto = userClient.saveUser(user);
+            final String token = jwtService.generateAccessToken(userDto);
 
-        final UserDto userDto = userClient.saveUser(user);
-        final String token = jwtService.generateAccessToken(userDto);
-
-        return ResponseDto.builder()
-            .accessToken(token)
-            .userId(userDto.getId())
-            .roles(Collections.singletonList(user.getRole()))
-            .build();
+            return ResponseDto.builder()
+                .accessToken(token)
+                .userId(userDto.getId())
+                .roles(Collections.singletonList(user.getRole()))
+                .build();
+        } catch (FeignException.Conflict ex) {
+            throw new UserAlreadyExistsException(request.getEmail());
+        }
     }
 
     @Override
