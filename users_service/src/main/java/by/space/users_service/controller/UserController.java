@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 @RequiredArgsConstructor
 public class UserController {
@@ -20,7 +19,6 @@ public class UserController {
     public ResponseEntity<UserAuthDto> getUser(@RequestParam("email") final String email) {
         return ResponseEntity.ok(userService.getUser(email));
     }
-
 
     @PostMapping("/makeUser")
     public ResponseEntity<UserAuthDto> makeUser(@RequestBody final RegistrationRequestDto requestDto) {

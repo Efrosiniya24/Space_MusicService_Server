@@ -20,9 +20,10 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public UserAuthorityDto setUserAuthority(final Long userId, final Long roleId) {
-        final UserAuthority userAuthority = new UserAuthority();
-        userAuthority.setUserId(userId);
-        userAuthority.setRoleId(roleId);
+        final UserAuthority userAuthority = UserAuthority.builder()
+            .userId(userId)
+            .roleId(roleId)
+            .build();
         return userAuthorityMapper.mapToUserAuthorityDto(userRoleRepository.save(userAuthority));
     }
 

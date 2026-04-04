@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,6 +22,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public List<VenueAddressDto> addAddresses(final List<VenueAddressDto> addresses, final Long venueId) {
         final List<VenueAddressEntity> addressEntity = venueAddressMapper.mapToVenueAddressEntity(addresses);
+        checkIfAddressAdded(addresses, venueId);
         addressEntity.forEach(address -> {
             address.setVenueId(venueId);
             address.setCreatedAt(LocalDateTime.now());
@@ -37,6 +39,10 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public List<Long> getIdOfAddresses(final List<VenueAddressDto> addresses) {
+        if (addresses.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         return addresses.stream()
             .map(VenueAddressDto::getId)
             .toList();
@@ -46,5 +52,9 @@ public class AddressServiceImpl implements AddressService {
     public List<VenueAddressDto> getAllAddressesByIds(final List<Long> addressesIds) {
         final List<VenueAddressEntity> addressEntity = venueAddressRepository.findAllById(addressesIds);
         return venueAddressMapper.mapToVenueAddressDto(addressEntity);
+    }
+
+    private void checkIfAddressAdded(final List<VenueAddressDto> address, final Long venueId) {
+        //todo: check if all new addresses are not added to venue before. Make repository method for checking
     }
 }

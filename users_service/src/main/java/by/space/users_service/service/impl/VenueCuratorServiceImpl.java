@@ -25,7 +25,12 @@ public class VenueCuratorServiceImpl implements VenueCuratorService {
     }
 
     @Override
-    public void createVenueCurator(final Long curatorId, final Long venueId, final List<Long> addressesId, final Boolean isUserAdmin) {
+    public void createVenueCurator(
+        final Long curatorId,
+        final Long venueId,
+        final List<Long> addressesId,
+        final Boolean isUserAdmin
+    ) {
         final List<VenueCuratorsEntity> venueCurators = new ArrayList<>();
         addressesId.forEach(address ->
             venueCurators.add(VenueCuratorsEntity

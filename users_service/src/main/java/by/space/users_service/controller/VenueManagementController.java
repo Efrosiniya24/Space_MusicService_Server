@@ -21,5 +21,4 @@ public class VenueManagementController {
     public ResponseEntity<VenueConfirmDto> confirmVenue(@PathVariable Long id, @RequestParam String status) {
         return ResponseEntity.ok(venueManagementService.confirmVenue(id, status));
     }
-
 }

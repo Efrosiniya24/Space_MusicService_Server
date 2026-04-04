@@ -27,7 +27,7 @@ public interface UserService {
      * @param role  new role
      * @return updated user
      */
-    UserAuthDto addRole(String email, String role);
+    UserAuthDto addRoleToUser(String email, String role);
 
     /**
      * check if user exists

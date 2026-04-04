@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService {
                 userAuthDto.setRoles(Collections.singletonList(Role.valueOf(request.getRole())));
                 return userAuthDto;
             } else if (Objects.equals(request.getRole(), Role.LISTENER.name())) {
-                return addRole(user.getEmail(), request.getRole());
+                return addRoleToUser(user.getEmail(), request.getRole());
             } else throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
         } catch (DataIntegrityViolationException ex) {
             throw new UserAlreadyExistsException(request.getEmail());
@@ -70,12 +70,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserAuthDto addRole(final String email, final String role) {
+    @Transactional
+    public UserAuthDto addRoleToUser(final String email, final String role) {
         final UserAuthDto user = getUser(email);
         final Role newRole = Role.valueOf(role);
-        if (user.getRoles().contains(newRole)) {
-            throw new RuntimeException("User with email " + email + " is already exists");
-        }
+        checkUserHasNewRole(newRole, user);
 
         roleService.addUserAuthority(user.getId(), newRole);
         return getUser(email);
@@ -85,5 +84,11 @@ public class UserServiceImpl implements UserService {
     public boolean isUserExist(final String email) {
         final UserEntity user = userRepository.findByEmail(email).orElse(null);
         return user != null;
+    }
+
+    private void checkUserHasNewRole(final Role newRole, final UserAuthDto user) {
+        if (user.getRoles().contains(newRole)) {
+            throw new RuntimeException("User with email " + user.getEmail() + " is already exists");
+        }
     }
 }

@@ -14,8 +14,10 @@ public class RoleController {
     private final UserService userService;
 
     @PostMapping("/addRole")
-    public ResponseEntity<UserAuthDto> addRole(@RequestParam("email") final String email,
-                                               @RequestParam("role") final String role) {
-        return ResponseEntity.ok(userService.addRole(email, role));
+    public ResponseEntity<UserAuthDto> addRoleToUser(
+        @RequestParam("email") final String email,
+        @RequestParam("role") final String role
+    ) {
+        return ResponseEntity.ok(userService.addRoleToUser(email, role));
     }
 }
