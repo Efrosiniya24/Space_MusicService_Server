@@ -16,4 +16,6 @@ public class ResponseDto {
     private String accessToken;
     private Long userId;
     private List<Role> roles;
+    private String name;
+    private String email;
 }

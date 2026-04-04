@@ -22,5 +22,4 @@ public class ImageController {
         return ResponseEntity.ok().build();
     }
 
-
 }
