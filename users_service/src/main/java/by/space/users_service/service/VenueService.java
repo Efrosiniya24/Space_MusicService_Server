@@ -7,9 +7,16 @@ import java.util.List;
 
 public interface VenueService {
     /**
-     * method of getting all venues
+     * method of getting all confirmed venues
      *
-     * @return list of venues
+     * @return list of all confirmed venues
+     */
+    List<VenueDto> getAllConfirmedVenues();
+
+    /**
+     * Getting all venues
+     *
+     * @return list of all venues
      */
     List<VenueDto> getAllVenues();
 

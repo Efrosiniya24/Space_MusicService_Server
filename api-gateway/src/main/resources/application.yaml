@@ -24,6 +24,11 @@ spring:
               filters:
                 - RewritePath=/space/user/auth/(?<segment>.*), /user/auth/${segment}
 
+            - id: users-system-venue
+              uri: lb://USERS-SERVICE
+              predicates:
+                - Path=/space/system/venue/**
+
             - id: users-venue
               uri: lb://USERS-SERVICE
               predicates:

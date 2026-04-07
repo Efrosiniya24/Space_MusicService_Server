@@ -29,8 +29,18 @@ public class VenueServiceImpl implements VenueService {
     private final AddressService addressService;
 
     @Override
-    public List<VenueDto> getAllVenues() {
+    public List<VenueDto> getAllConfirmedVenues() {
         final List<VenueDto> venues = getAllVenuesByStatus(StatusVenue.CONFIRMED);
+        venues.forEach(venue -> {
+            final List<VenueAddressDto> addresses = addressService.getAllActiveVenueAddresses(venue.getId());
+            venue.setAddresses(addresses);
+        });
+        return venues;
+    }
+
+    @Override
+    public List<VenueDto> getAllVenues() {
+        final List<VenueDto> venues = venueMapper.mapToVenueDto(venueRepository.findAll());
         venues.forEach(venue -> {
             final List<VenueAddressDto> addresses = addressService.getAllActiveVenueAddresses(venue.getId());
             venue.setAddresses(addresses);

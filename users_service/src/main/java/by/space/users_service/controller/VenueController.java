@@ -1,5 +1,6 @@
 package by.space.users_service.controller;
 
+import by.space.users_service.enums.StatusVenue;
 import by.space.users_service.model.dto.VenueDto;
 import by.space.users_service.service.VenueService;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,13 @@ import java.util.List;
 public class VenueController {
     private final VenueService venueService;
 
+    @GetMapping("/allConfirmed")
+    public ResponseEntity<List<VenueDto>> getAllConfirmedVenue() {
+        return ResponseEntity.ok(venueService.getAllConfirmedVenues());
+    }
+
     @GetMapping("/all")
-    public ResponseEntity<List<VenueDto>> getAllVenue() {
+    public ResponseEntity<List<VenueDto>> getAllVenues() {
         return ResponseEntity.ok(venueService.getAllVenues());
     }
 

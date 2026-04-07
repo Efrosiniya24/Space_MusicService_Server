@@ -10,4 +10,5 @@ import java.util.List;
 public interface VenueRepository extends JpaRepository<VenueEntity, Long> {
     List<VenueEntity> findAllByStatus(final StatusVenue status);
 
+    Long countByStatusAndDeletedFalse(StatusVenue status);
 }
