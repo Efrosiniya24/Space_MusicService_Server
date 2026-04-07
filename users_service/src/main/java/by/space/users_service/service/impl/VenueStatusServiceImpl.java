@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Service
 @AllArgsConstructor
-public class VenueManagementServiceImpl implements VenueStatusService {
+public class VenueStatusServiceImpl implements VenueStatusService {
 
     private final VenueService venueService;
     private final VenueRepository venueRepository;
