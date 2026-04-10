@@ -39,4 +39,9 @@ public class VenueController {
     public ResponseEntity<List<VenueDto>> getAllUserVenue(@PathVariable final Long userId) {
         return ResponseEntity.ok(venueService.getAllUserVenue(userId));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<VenueDto> getVenueById(@PathVariable final Long id) {
+        return ResponseEntity.ok(venueService.getVenue(id));
+    }
 }

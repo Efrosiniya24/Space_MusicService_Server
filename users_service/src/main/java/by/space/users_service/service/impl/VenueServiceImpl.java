@@ -75,8 +75,10 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public VenueDto getVenue(final Long venueId) {
-        return venueMapper.mapToVenueDto(venueRepository.findById(venueId)
+        final VenueDto venueDto = venueMapper.mapToVenueDto(venueRepository.findById(venueId)
             .orElseThrow(() -> new RuntimeException("Venue not found")));
+        venueDto.setAddresses(addressService.getAllActiveVenueAddresses(venueDto.getId()));
+        return venueDto;
     }
 
     @Override
