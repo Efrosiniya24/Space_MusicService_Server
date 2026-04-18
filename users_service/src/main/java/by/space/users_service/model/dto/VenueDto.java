@@ -1,6 +1,5 @@
 package by.space.users_service.model.dto;
 
-import by.space.users_service.enums.StatusVenue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +20,6 @@ public class VenueDto {
     private String description;
     private String urlWebSite;
     private String phone;
-    private StatusVenue status;
     private boolean deleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

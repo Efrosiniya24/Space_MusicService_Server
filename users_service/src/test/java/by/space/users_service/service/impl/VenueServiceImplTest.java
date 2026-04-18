@@ -62,7 +62,7 @@ class VenueServiceImplTest {
 //        verify(v2).setAddresses(addr2);
 //
 //        verifyNoInteractions(mediaClient, venueCuratorService);
-//        // venueAddressRepository тут не должен трогаться
+//        // venueAddressRepository must not be used here
 //        verifyNoInteractions(venueAddressRepository);
 //
 //        verifyNoMoreInteractions(venueRepository, venueMapper, addressService, v1, v2);

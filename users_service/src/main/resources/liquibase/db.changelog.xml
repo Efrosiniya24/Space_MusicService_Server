@@ -16,4 +16,23 @@
                 tableName="venue_curator"/>
     </changeSet>
 
+    <changeSet id="MOVE_VENUE_STATUS_TO_VENUE_ADDRESS" author="e.zinkovskaya">
+        <addColumn tableName="venue_address">
+            <column name="status" type="VARCHAR(32)"/>
+        </addColumn>
+        <sql>
+            <![CDATA[
+            UPDATE venue_address va
+            INNER JOIN venue v ON v.id = va.venue_id
+            SET va.status = v.status
+            ]]>
+        </sql>
+        <addNotNullConstraint
+                tableName="venue_address"
+                columnName="status"
+                columnDataType="VARCHAR(32)"
+                defaultNullValue="PENDING"/>
+        <dropColumn tableName="venue" columnName="status"/>
+    </changeSet>
+
 </databaseChangeLog>

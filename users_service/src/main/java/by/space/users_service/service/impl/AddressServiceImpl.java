@@ -1,5 +1,6 @@
 package by.space.users_service.service.impl;
 
+import by.space.users_service.enums.StatusVenue;
 import by.space.users_service.mapper.VenueAddressMapper;
 import by.space.users_service.model.dto.VenueAddressDto;
 import by.space.users_service.model.mysql.domain.venue.address.VenueAddressEntity;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,9 @@ public class AddressServiceImpl implements AddressService {
         addressEntity.forEach(address -> {
             address.setVenueId(venueId);
             address.setCreatedAt(LocalDateTime.now());
+            if (Objects.isNull(address.getStatus())) {
+                address.setStatus(StatusVenue.PENDING);
+            }
         });
 
         final List<VenueAddressEntity> savedAddresses = venueAddressRepository.saveAll(addressEntity);
@@ -36,6 +41,17 @@ public class AddressServiceImpl implements AddressService {
     public List<VenueAddressDto> getAllActiveVenueAddresses(final Long venueId) {
         return venueAddressMapper.mapToVenueAddressDto(
             venueAddressRepository.findAllByVenueIdAndDeletedIsFalse(venueId));
+    }
+
+    @Override
+    public List<VenueAddressDto> getActiveVenueAddressesByStatus(final Long venueId, final StatusVenue status) {
+        return venueAddressMapper.mapToVenueAddressDto(
+            venueAddressRepository.findAllByVenueIdAndDeletedIsFalseAndStatus(venueId, status));
+    }
+
+    @Override
+    public List<Long> findVenueIdsHavingActiveAddressWithStatus(final StatusVenue status) {
+        return venueAddressRepository.findDistinctVenueIdsByStatus(status);
     }
 
     @Override

@@ -8,5 +8,6 @@ import lombok.Data;
 @Builder
 public class VenueConfirmDto {
     private VenueDto venue;
+    private VenueAddressDto address;
     private StatusVenue status;
 }

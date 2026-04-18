@@ -11,9 +11,11 @@ public interface VenueCuratorRepository extends JpaRepository<VenueCuratorsEntit
 
     @Query("SELECT vc FROM VenueCuratorsEntity vc " +
         "JOIN VenueEntity v ON vc.venueId = v.id " +
+        "JOIN VenueAddressEntity a ON a.id = vc.addressId " +
         "WHERE vc.deleted = false " +
         "AND v.deleted = false " +
-        "AND v.status = 'CONFIRMED' " +
+        "AND a.deleted = false " +
+        "AND a.status = 'CONFIRMED' " +
         "AND vc.curatorId = :id ")
     List<VenueCuratorsEntity> findAllByCuratorIdAndDeletedIsFalse(Long id);
 

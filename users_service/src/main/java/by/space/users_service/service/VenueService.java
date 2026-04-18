@@ -21,8 +21,10 @@ public interface VenueService {
     List<VenueDto> getAllVenues();
 
     /**
-     * method of getting all venues from bd by status
+     * Venues that have at least one active address in the given status;
+     * response includes all active addresses for each venue.
      *
+     * @param statusVenue address status filter
      * @return list of venues
      */
     List<VenueDto> getAllVenuesByStatus(StatusVenue statusVenue);

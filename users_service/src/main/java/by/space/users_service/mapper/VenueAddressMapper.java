@@ -11,4 +11,6 @@ public interface VenueAddressMapper {
     List<VenueAddressEntity> mapToVenueAddressEntity(List<VenueAddressDto> venueAddressDto);
 
     List<VenueAddressDto> mapToVenueAddressDto(List<VenueAddressEntity> venueEntities);
+
+    VenueAddressDto mapToVenueAddressDto(VenueAddressEntity venueAddressEntity);
 }

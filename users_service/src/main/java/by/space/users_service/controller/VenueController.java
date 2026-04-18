@@ -1,6 +1,5 @@
 package by.space.users_service.controller;
 
-import by.space.users_service.enums.StatusVenue;
 import by.space.users_service.model.dto.VenueDto;
 import by.space.users_service.service.VenueService;
 import lombok.RequiredArgsConstructor;

@@ -30,11 +30,15 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public List<VenueDto> getAllConfirmedVenues() {
-        final List<VenueDto> venues = getAllVenuesByStatus(StatusVenue.CONFIRMED);
-        venues.forEach(venue -> {
-            final List<VenueAddressDto> addresses = addressService.getAllActiveVenueAddresses(venue.getId());
-            venue.setAddresses(addresses);
-        });
+        final List<Long> venueIds =
+            addressService.findVenueIdsHavingActiveAddressWithStatus(StatusVenue.CONFIRMED);
+        if (venueIds.isEmpty()) {
+            return List.of();
+        }
+        final List<VenueDto> venues = venueMapper.mapToVenueDto(
+            venueRepository.findAllById(venueIds).stream().filter(v -> !v.isDeleted()).toList());
+        venues.forEach(venue -> venue.setAddresses(
+            addressService.getActiveVenueAddressesByStatus(venue.getId(), StatusVenue.CONFIRMED)));
         return venues;
     }
 
@@ -50,13 +54,19 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public List<VenueDto> getAllVenuesByStatus(final StatusVenue statusVenue) {
-        return venueMapper.mapToVenueDto(venueRepository.findAllByStatus(statusVenue));
+        final List<Long> venueIds =
+            addressService.findVenueIdsHavingActiveAddressWithStatus(statusVenue);
+        if (venueIds.isEmpty()) {
+            return List.of();
+        }
+        final List<VenueDto> venues = venueMapper.mapToVenueDto(venueRepository.findAllById(venueIds));
+        venues.forEach(venue -> venue.setAddresses(addressService.getAllActiveVenueAddresses(venue.getId())));
+        return venues;
     }
 
     @Override
     @Transactional
     public VenueDto createVenue(final VenueDto venueDto) {
-        venueDto.setStatus(StatusVenue.PENDING);
         venueDto.setCreatedAt(LocalDateTime.now());
 
         final VenueEntity venue = venueMapper.mapToVenueEntity(venueDto);

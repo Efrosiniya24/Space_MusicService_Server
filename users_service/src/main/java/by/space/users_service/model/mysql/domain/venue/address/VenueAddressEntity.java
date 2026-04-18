@@ -1,6 +1,10 @@
 package by.space.users_service.model.mysql.domain.venue.address;
 
+import by.space.users_service.enums.StatusVenue;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,6 +32,9 @@ public class VenueAddressEntity {
     private String city;
     private String addressCity;
     private Long venueId;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private StatusVenue status;
     private boolean deleted = false;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
