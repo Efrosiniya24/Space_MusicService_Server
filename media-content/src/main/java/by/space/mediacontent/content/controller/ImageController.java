@@ -4,6 +4,7 @@ import by.space.mediacontent.content.dto.ImageDto;
 import by.space.mediacontent.content.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,4 +23,6 @@ public class ImageController {
         return ResponseEntity.ok().build();
     }
 
+//    @GetMapping("/getVenueCover")
+//    public ResponseEntity
 }

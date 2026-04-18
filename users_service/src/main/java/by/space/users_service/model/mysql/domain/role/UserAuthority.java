@@ -1,4 +1,4 @@
-package by.space.users_service.model.mysql.role;
+package by.space.users_service.model.mysql.domain.role;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -1,5 +1,7 @@
-package by.space.users_service.model.mysql.venue.address;
+package by.space.users_service.model.mysql.domain.user;
 
+import by.space.users_service.enums.GenderType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,24 +13,30 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "venue_address")
+@Table(name = "user")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class VenueAddressEntity {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String country;
-    private String city;
-    private String addressCity;
-    private Long venueId;
+    @Column(unique = true, nullable = false)
+    private String email;
+    @Column(nullable = false)
+    private String password;
+    private String name;
+    private String phone;
+    @Column(name = "is_deleted")
     private boolean deleted = false;
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private GenderType gender;
+    private LocalDate dateOfBirth;
 }

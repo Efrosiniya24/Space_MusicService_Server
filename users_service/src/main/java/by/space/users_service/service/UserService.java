@@ -3,6 +3,8 @@ package by.space.users_service.service;
 import by.space.users_service.model.dto.RegistrationRequestDto;
 import by.space.users_service.model.dto.UserAuthDto;
 
+import java.util.List;
+
 public interface UserService {
     /**
      * Get main info about user
@@ -36,4 +38,12 @@ public interface UserService {
      * @return is user exists
      */
     boolean isUserExist(String email);
+
+    /**
+     * Gets all users by ids
+     *
+     * @param usersIds list of users id
+     * @return list of all users and their data
+     */
+    List<UserAuthDto> getAllUsersByIds(List<Long> usersIds);
 }

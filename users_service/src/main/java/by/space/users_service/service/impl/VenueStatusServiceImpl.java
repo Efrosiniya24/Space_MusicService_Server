@@ -3,7 +3,7 @@ package by.space.users_service.service.impl;
 import by.space.users_service.enums.StatusVenue;
 import by.space.users_service.model.dto.VenueConfirmDto;
 import by.space.users_service.model.dto.VenueDto;
-import by.space.users_service.model.mysql.venue.VenueRepository;
+import by.space.users_service.model.mysql.domain.venue.VenueRepository;
 import by.space.users_service.service.VenueService;
 import by.space.users_service.service.VenueStatusService;
 import lombok.AllArgsConstructor;

@@ -3,8 +3,8 @@ package by.space.users_service.mapper;
 
 import by.space.users_service.model.dto.VenueCuratorDto;
 import by.space.users_service.model.dto.VenueDto;
-import by.space.users_service.model.mysql.venue.VenueEntity;
-import by.space.users_service.model.mysql.venue.curators.VenueCuratorsEntity;
+import by.space.users_service.model.mysql.domain.venue.VenueEntity;
+import by.space.users_service.model.mysql.domain.venue.curators.VenueCuratorsEntity;
 import org.mapstruct.Mapper;
 
 import java.util.List;

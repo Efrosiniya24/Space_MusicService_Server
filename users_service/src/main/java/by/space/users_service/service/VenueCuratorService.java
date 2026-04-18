@@ -22,4 +22,12 @@ public interface VenueCuratorService {
      * @param isUserAdmin is curator admin
      */
     void createVenueCurator(Long curatorId, Long venueId, List<Long> addressesId, Boolean isUserAdmin);
+
+    /**
+     * Gets all venue curators by venue id
+     *
+     * @param venueId venue id for getting all curators
+     * @return list of all venue curators (admins and musical curator) for active addresses
+     */
+    List<VenueCuratorDto> getAllVenueCurators(Long venueId);
 }

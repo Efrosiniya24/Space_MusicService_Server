@@ -1,0 +1,31 @@
+server:
+  port: 8081
+
+spring:
+  activemq:
+    prefix: yz
+  application:
+    name: USERS-SERVICE
+  datasource:
+    url: jdbc:mysql://localhost:33307/users
+    password: 1111
+    username: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: users-service
+    prefer-ip-address: false
+
+minio:
+  url: http://minio:9000

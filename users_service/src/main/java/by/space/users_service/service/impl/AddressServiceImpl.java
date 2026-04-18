@@ -2,8 +2,8 @@ package by.space.users_service.service.impl;
 
 import by.space.users_service.mapper.VenueAddressMapper;
 import by.space.users_service.model.dto.VenueAddressDto;
-import by.space.users_service.model.mysql.venue.address.VenueAddressEntity;
-import by.space.users_service.model.mysql.venue.address.VenueAddressRepository;
+import by.space.users_service.model.mysql.domain.venue.address.VenueAddressEntity;
+import by.space.users_service.model.mysql.domain.venue.address.VenueAddressRepository;
 import by.space.users_service.service.AddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,8 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public List<VenueAddressDto> getAllActiveVenueAddresses(final Long venueId) {
-        return venueAddressMapper.mapToVenueAddressDto(venueAddressRepository.findAllByVenueId(venueId));
+        return venueAddressMapper.mapToVenueAddressDto(
+            venueAddressRepository.findAllByVenueIdAndDeletedIsFalse(venueId));
     }
 
     @Override

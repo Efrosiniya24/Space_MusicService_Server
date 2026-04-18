@@ -1,28 +1,30 @@
-package by.space.users_service.model.mysql.role;
+package by.space.users_service.model.mysql.domain.venue.curators;
 
-import by.space.users_service.enums.Role;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "role")
+@Table(name = "venue_curator")
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class Authority {
+@NoArgsConstructor
+@Builder
+public class VenueCuratorsEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    private Long curatorId;
+    private Long venueId;
+    private Long addressId;
+    private Boolean isUserAdmin;
+    private boolean deleted = false;
 }

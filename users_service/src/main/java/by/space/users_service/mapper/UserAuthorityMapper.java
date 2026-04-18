@@ -1,7 +1,7 @@
 package by.space.users_service.mapper;
 
 import by.space.users_service.model.dto.UserAuthorityDto;
-import by.space.users_service.model.mysql.role.UserAuthority;
+import by.space.users_service.model.mysql.domain.role.UserAuthority;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

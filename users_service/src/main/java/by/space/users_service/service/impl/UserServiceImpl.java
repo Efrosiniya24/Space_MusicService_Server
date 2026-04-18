@@ -5,9 +5,10 @@ import by.space.users_service.exception.UserAlreadyExistsException;
 import by.space.users_service.mapper.UserMapper;
 import by.space.users_service.model.dto.RegistrationRequestDto;
 import by.space.users_service.model.dto.UserAuthDto;
-import by.space.users_service.model.mysql.role.UserRoleRepository;
-import by.space.users_service.model.mysql.user.UserEntity;
-import by.space.users_service.model.mysql.user.UserRepository;
+import by.space.users_service.model.mysql.domain.role.UserRoleRepository;
+import by.space.users_service.model.mysql.domain.user.UserEntity;
+import by.space.users_service.model.mysql.domain.user.UserRepository;
+import by.space.users_service.model.mysql.projection.UserRoleProjection;
 import by.space.users_service.service.RoleService;
 import by.space.users_service.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,8 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -84,6 +88,26 @@ public class UserServiceImpl implements UserService {
     public boolean isUserExist(final String email) {
         final UserEntity user = userRepository.findByEmail(email).orElse(null);
         return user != null;
+    }
+
+    @Override
+    public List<UserAuthDto> getAllUsersByIds(final List<Long> usersIds) {
+        final List<UserAuthDto> users = userMapper.mapToUserAuthDtoList(
+            userRepository.findAllById(usersIds)
+        );
+        if (users.isEmpty()) {
+            return users;
+        }
+        final List<Long> foundUserIds = users.stream().map(UserAuthDto::getId).toList();
+        final List<UserRoleProjection> roleRows = userRoleRepository.findRolesByUserIds(foundUserIds);
+        final Map<Long, List<Role>> rolesByUserId = new HashMap<>();
+        for (final UserRoleProjection role : roleRows) {
+            rolesByUserId.computeIfAbsent(role.getUserId(), id -> new ArrayList<>()).add(role.getRole());
+        }
+        for (final UserAuthDto user : users) {
+            user.setRoles(rolesByUserId.getOrDefault(user.getId(), Collections.emptyList()));
+        }
+        return users;
     }
 
     private void checkUserHasNewRole(final Role newRole, final UserAuthDto user) {

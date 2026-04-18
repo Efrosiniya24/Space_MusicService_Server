@@ -1,4 +1,4 @@
-package by.space.users_service.model.mysql.venue;
+package by.space.users_service.model.mysql.domain.venue;
 
 import by.space.users_service.enums.StatusVenue;
 import jakarta.persistence.Column;

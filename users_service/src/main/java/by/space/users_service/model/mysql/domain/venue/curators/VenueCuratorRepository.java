@@ -1,4 +1,4 @@
-package by.space.users_service.model.mysql.venue.curators;
+package by.space.users_service.model.mysql.domain.venue.curators;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +16,6 @@ public interface VenueCuratorRepository extends JpaRepository<VenueCuratorsEntit
         "AND v.status = 'CONFIRMED' " +
         "AND vc.curatorId = :id ")
     List<VenueCuratorsEntity> findAllByCuratorIdAndDeletedIsFalse(Long id);
+
+    List<VenueCuratorsEntity> findAllByDeletedIsFalseAndVenueId(Long venueId);
 }

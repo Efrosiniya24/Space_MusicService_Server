@@ -1,4 +1,4 @@
-package by.space.users_service.model.mysql.user;
+package by.space.users_service.model.mysql.domain.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

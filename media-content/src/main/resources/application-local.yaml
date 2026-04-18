@@ -1,0 +1,39 @@
+server:
+  port: 8082
+
+spring:
+  activemq:
+    prefix: yz
+  application:
+    name: MEDIA-CONTENT
+  datasource:
+    url: jdbc:mysql://localhost:33308/media
+    password: 1111
+    username: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 10000MB
+      enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: media-content
+    prefer-ip-address: false
+
+minio:
+  url: http://minio:9000
+  access-key: space24
+  secret-key: 34fhj84wjfelw
+  bucket: space-media

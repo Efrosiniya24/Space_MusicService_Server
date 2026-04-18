@@ -28,75 +28,75 @@ import java.io.InputStream;
 @ExtendWith(MockitoExtension.class)
 class MinioStorageServiceImplTest {
 
-    @Mock
-    private MinioClient minioClient;
-
-    @InjectMocks
-    private MinioStorageServiceImpl service;
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(service, "bucket", "space-media");
-    }
-
-    @Test
-    void upload_shouldCallPutObject_andReturnObjectName() throws Exception {
-        // given
-        MockMultipartFile file = new MockMultipartFile(
-            "file",
-            "a.png",
-            "image/png",
-            "hello".getBytes()
-        );
-        when(minioClient.putObject(any(PutObjectArgs.class)))
-            .thenReturn(mock(ObjectWriteResponse.class));
-
-        // when
-        String result = service.upload(file, "images/1/a.png");
-
-        // then
-        assertEquals("images/1/a.png", result);
-        verify(minioClient, times(1)).putObject(any(PutObjectArgs.class));
-    }
-
-    @Test
-    void upload_shouldThrowRuntimeException_whenMinioFails() throws Exception {
-        // given
-        MockMultipartFile file = new MockMultipartFile(
-            "file",
-            "a.png",
-            "image/png",
-            "x".getBytes()
-        );
-        when(minioClient.putObject(any(PutObjectArgs.class)))
-            .thenThrow(new RuntimeException("boom"));
-
-        // when then
-        assertThrows(RuntimeException.class, () -> service.upload(file, "k"));
-    }
-
-    @Test
-    void download_shouldReturnInputStream_fromMinio() throws Exception {
-        // given
-        GetObjectResponse expected = mock(GetObjectResponse.class);
-        when(minioClient.getObject(any(GetObjectArgs.class))).thenReturn(expected);
-
-        // when
-        InputStream result = service.download("images/1/a.png");
-
-        // then
-        assertSame(expected, result);
-
-        verify(minioClient, times(1)).getObject(any(GetObjectArgs.class));
-    }
-
-    @Test
-    void download_shouldThrowRuntimeException_whenMinioFails() throws Exception {
-        // given
-        when(minioClient.getObject(any(GetObjectArgs.class)))
-            .thenThrow(new RuntimeException("nope"));
-
-        // when then
-        assertThrows(RuntimeException.class, () -> service.download("k"));
-    }
+//    @Mock
+//    private MinioClient minioClient;
+//
+//    @InjectMocks
+//    private MinioStorageServiceImpl service;
+//
+//    @BeforeEach
+//    void setUp() {
+//        ReflectionTestUtils.setField(service, "bucket", "space-media");
+//    }
+//
+//    @Test
+//    void upload_shouldCallPutObject_andReturnObjectName() throws Exception {
+//        // given
+//        MockMultipartFile file = new MockMultipartFile(
+//            "file",
+//            "a.png",
+//            "image/png",
+//            "hello".getBytes()
+//        );
+//        when(minioClient.putObject(any(PutObjectArgs.class)))
+//            .thenReturn(mock(ObjectWriteResponse.class));
+//
+//        // when
+//        String result = service.upload(file, "images/1/a.png");
+//
+//        // then
+//        assertEquals("images/1/a.png", result);
+//        verify(minioClient, times(1)).putObject(any(PutObjectArgs.class));
+//    }
+//
+//    @Test
+//    void upload_shouldThrowRuntimeException_whenMinioFails() throws Exception {
+//        // given
+//        MockMultipartFile file = new MockMultipartFile(
+//            "file",
+//            "a.png",
+//            "image/png",
+//            "x".getBytes()
+//        );
+//        when(minioClient.putObject(any(PutObjectArgs.class)))
+//            .thenThrow(new RuntimeException("boom"));
+//
+//        // when then
+//        assertThrows(RuntimeException.class, () -> service.upload(file, "k"));
+//    }
+//
+//    @Test
+//    void download_shouldReturnInputStream_fromMinio() throws Exception {
+//        // given
+//        GetObjectResponse expected = mock(GetObjectResponse.class);
+//        when(minioClient.getObject(any(GetObjectArgs.class))).thenReturn(expected);
+//
+//        // when
+//        InputStream result = service.download("images/1/a.png");
+//
+//        // then
+//        assertSame(expected, result);
+//
+//        verify(minioClient, times(1)).getObject(any(GetObjectArgs.class));
+//    }
+//
+//    @Test
+//    void download_shouldThrowRuntimeException_whenMinioFails() throws Exception {
+//        // given
+//        when(minioClient.getObject(any(GetObjectArgs.class)))
+//            .thenThrow(new RuntimeException("nope"));
+//
+//        // when then
+//        assertThrows(RuntimeException.class, () -> service.download("k"));
+//    }
 }

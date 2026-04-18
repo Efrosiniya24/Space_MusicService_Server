@@ -12,5 +12,5 @@ public class VenueCuratorDto {
     private Long addressId;
     private Boolean isUserAdmin;
     private boolean deleted;
-
+    private UserAuthDto user;
 }
