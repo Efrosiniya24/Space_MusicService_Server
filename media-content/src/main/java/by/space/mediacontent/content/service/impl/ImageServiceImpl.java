@@ -3,19 +3,23 @@ package by.space.mediacontent.content.service.impl;
 import by.space.mediacontent.content.domain.entity.ImageEntity;
 import by.space.mediacontent.content.domain.entity.ImageVenueEntity;
 import by.space.mediacontent.content.dto.ImageDto;
+import by.space.mediacontent.content.dto.VenueCoverStreamDto;
 import by.space.mediacontent.content.mapper.ImageMapper;
 import by.space.mediacontent.content.repository.ImageRepository;
 import by.space.mediacontent.content.repository.ImageVenueRepository;
 import by.space.mediacontent.content.service.ImageService;
 import by.space.mediacontent.content.service.MinioStorageService;
+import by.space.mediacontent.content.util.MediaTypeUtil;
 import by.space.mediacontent.content.util.ObjectKeyGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -61,5 +65,19 @@ public class ImageServiceImpl implements ImageService {
             .venueId(venueId)
             .build();
         imageVenueRepository.save(imageVenue);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VenueCoverStreamDto getVenueCover(final Long venueId) {
+        final ImageVenueEntity link = imageVenueRepository
+            .findTopByVenueIdOrderByIdDesc(venueId)
+            .orElseThrow(() -> new NoSuchElementException("venue cover not found"));
+        final ImageEntity image = imageRepository.findById(link.getImageId())
+            .orElseThrow(() -> new NoSuchElementException("image not found"));
+        return new VenueCoverStreamDto(
+            new InputStreamResource(minioStorageService.download(image.getObjectKey())),
+            MediaTypeUtil.guessFromFileName(image.getFileName())
+        );
     }
 }

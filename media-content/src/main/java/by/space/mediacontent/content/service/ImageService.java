@@ -1,6 +1,7 @@
 package by.space.mediacontent.content.service;
 
 import by.space.mediacontent.content.dto.ImageDto;
+import by.space.mediacontent.content.dto.VenueCoverStreamDto;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ImageService {
@@ -22,4 +23,12 @@ public interface ImageService {
      * @param venueId venue of saving cover
      */
     void addVenueCover(MultipartFile file, Long ownerId, Long venueId);
+
+    /**
+     * Gets venue cover
+     *
+     * @param venueId venue id
+     * @return venue cover
+     */
+    VenueCoverStreamDto getVenueCover(Long venueId);
 }

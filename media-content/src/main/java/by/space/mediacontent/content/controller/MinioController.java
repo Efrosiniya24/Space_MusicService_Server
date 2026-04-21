@@ -1,6 +1,7 @@
 package by.space.mediacontent.content.controller;
 
 import by.space.mediacontent.content.service.MinioStorageService;
+import by.space.mediacontent.content.util.MediaTypeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +24,11 @@ public class MinioController {
 
     @GetMapping("/download")
     public ResponseEntity<InputStreamResource> download(@RequestParam final String key) {
-        return ResponseEntity.ok(
-            new InputStreamResource(storageService.download(key))
-        );
+        final String name = key == null ? "" : key.replace('\\', '/');
+        final int slash = name.lastIndexOf('/');
+        final String fileName = slash >= 0 ? name.substring(slash + 1) : name;
+        return ResponseEntity.ok()
+            .contentType(MediaTypeUtil.guessFromFileName(fileName))
+            .body(new InputStreamResource(storageService.download(key)));
     }
 }
