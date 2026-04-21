@@ -9,6 +9,8 @@ spring:
     password: 1111
     username: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+  liquibase:
+    change-log: classpath:liquibase/db.changelog.xml
   jpa:
     show-sql: true
     hibernate:

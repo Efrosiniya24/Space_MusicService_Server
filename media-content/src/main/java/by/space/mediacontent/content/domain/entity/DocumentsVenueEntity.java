@@ -25,6 +25,7 @@ public class DocumentsVenueEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long venueId;
+    private Long venueAddressId;
     private String url;
     private String title;
     private String bucket;
