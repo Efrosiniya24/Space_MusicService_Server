@@ -36,7 +36,7 @@
         <module>auth_service</module>
         <module>users_service</module>
         <module>media-content</module>
-        <module>preference_service</module>
+        <module>personalization</module>
         <module>Eureka</module>
         <module>api-gateway</module>
     </modules>

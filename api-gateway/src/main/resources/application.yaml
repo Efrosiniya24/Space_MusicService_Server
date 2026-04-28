@@ -71,17 +71,19 @@ spring:
               filters:
                 - RewritePath=/space/media/(?<segment>.*), /${segment}
 
-            - id: preferences
-              uri: lb://PREFERENCE-SERVICE
+            - id: personalization
+              uri: lb://PERSONALIZATION-SERVICE
               predicates:
-                - Path=/preferences/**
-
-            - id: preferences-swagger
-              uri: lb://PREFERENCE-SERVICE
-              predicates:
-                - Path=/preferences/v3/api-docs/**,/preferences/swagger-ui/**,/preferences/swagger-ui.html
+                - Path=/space/personalization/**
               filters:
-                - RewritePath=/preferences/(?<segment>.*), /${segment}
+                - RewritePath=/space/personalization/(?<segment>.*), /${segment}
+
+            - id: personalization-swagger
+              uri: lb://PERSONALIZATION-SERVICE
+              predicates:
+                - Path=/space/personalization/v3/api-docs/**,/space/personalization/swagger-ui/**,/space/personalization/swagger-ui.html
+              filters:
+                - RewritePath=/space/personalization/(?<segment>.*), /${segment}
 
 eureka:
   client:
@@ -111,8 +113,8 @@ springdoc:
         url: /space/user/auth/v3/api-docs
       - name: media-content
         url: /space/media/v3/api-docs
-      - name: preferences
-        url: /preferences/v3/api-docs
+      - name: personalization
+        url: /space/personalization/v3/api-docs
     path: /swagger-ui.html
     enabled: true
   api-docs:

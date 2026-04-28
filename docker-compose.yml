@@ -106,11 +106,11 @@ services:
     networks:
       - space-net
 
-  preference-service:
+  personalization-service:
     build:
       context: .
-      dockerfile: preference_service/Dockerfile
-    container_name: preference_service
+      dockerfile: personalization/Dockerfile
+    container_name: personalization-service
     depends_on:
       - preferences
       - eureka
@@ -120,6 +120,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=personalization-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:mysql://preferences:3306/preferences
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=1111
@@ -136,7 +138,7 @@ services:
       - users-service
       - auth-service
       - media-content
-      - preference-service
+      - personalization-service
 
     ports:
       - "8080:8080"

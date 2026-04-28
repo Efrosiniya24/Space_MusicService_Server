@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="preferences-ext-001-preference-venue-time-flag" author="personalization">
+        <addColumn tableName="preference">
+            <column name="venue_id" type="BIGINT"/>
+            <column name="time_irrelevant" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <createIndex indexName="idx_preference_venue_id" tableName="preference">
+            <column name="venue_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="preferences-ext-002-preference-volume" author="personalization">
+        <createTable tableName="preference_volume">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="preference_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="volume_level" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="preference_volume"
+                             columnNames="preference_id, volume_level"
+                             constraintName="uk_preference_volume_pref_level"/>
+        <createIndex indexName="idx_preference_volume_preference_id" tableName="preference_volume">
+            <column name="preference_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="preference_volume"
+                                 baseColumnNames="preference_id"
+                                 constraintName="fk_preference_volume_preference"
+                                 referencedTableName="preference"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="preferences-ext-003-schedule-block" author="personalization">
+        <createTable tableName="preference_schedule_block">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="preference_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_pref_sched_block_preference_id" tableName="preference_schedule_block">
+            <column name="preference_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="preference_schedule_block"
+                                 baseColumnNames="preference_id"
+                                 constraintName="fk_pref_sched_block_preference"
+                                 referencedTableName="preference"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="preferences-ext-004-preference-day" author="personalization">
+        <createTable tableName="preference_day">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="block_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="weekday" type="TINYINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="preference_day"
+                             columnNames="block_id, weekday"
+                             constraintName="uk_preference_day_block_weekday"/>
+        <createIndex indexName="idx_preference_day_block_id" tableName="preference_day">
+            <column name="block_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="preference_day"
+                                 baseColumnNames="block_id"
+                                 constraintName="fk_preference_day_block"
+                                 referencedTableName="preference_schedule_block"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="preferences-ext-005-preference-time" author="personalization">
+        <createTable tableName="preference_time">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="block_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="time_kind" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="preset_code" type="VARCHAR(32)"/>
+            <column name="time_from" type="TIME"/>
+            <column name="time_to" type="TIME"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_preference_time_block_id" tableName="preference_time">
+            <column name="block_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="preference_time"
+                                 baseColumnNames="block_id"
+                                 constraintName="fk_preference_time_block"
+                                 referencedTableName="preference_schedule_block"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="preferences-ext-006-preference-schedule-date" author="personalization">
+        <createTable tableName="preference_schedule_date">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="block_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="specific_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="preference_schedule_date"
+                             columnNames="block_id, specific_date"
+                             constraintName="uk_pref_sched_date_block_date"/>
+        <createIndex indexName="idx_pref_sched_date_block_id" tableName="preference_schedule_date">
+            <column name="block_id"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="preference_schedule_date"
+                                 baseColumnNames="block_id"
+                                 constraintName="fk_pref_sched_date_block"
+                                 referencedTableName="preference_schedule_block"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>
