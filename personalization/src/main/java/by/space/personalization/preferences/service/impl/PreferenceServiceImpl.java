@@ -2,29 +2,37 @@ package by.space.personalization.preferences.service.impl;
 
 import by.space.personalization.preferences.dto.CreatePreferenceRequest;
 import by.space.personalization.preferences.dto.CustomIntervalRequest;
+import by.space.personalization.preferences.dto.PreferenceDetailsResponse;
+import by.space.personalization.preferences.dto.PreferenceScheduleBlockResponse;
 import by.space.personalization.preferences.dto.ScheduleBlockRequest;
 import by.space.personalization.preferences.entity.PreferenceAddressEntity;
 import by.space.personalization.preferences.entity.PreferenceDayEntity;
 import by.space.personalization.preferences.entity.PreferenceEntity;
 import by.space.personalization.preferences.entity.PreferenceGenreEntity;
+import by.space.personalization.preferences.entity.PreferencePlaylistEntity;
 import by.space.personalization.preferences.entity.PreferenceScheduleBlockEntity;
 import by.space.personalization.preferences.entity.PreferenceScheduleDateEntity;
 import by.space.personalization.preferences.entity.PreferenceTimeEntity;
+import by.space.personalization.preferences.entity.PreferenceTrackEntity;
 import by.space.personalization.preferences.entity.PreferenceVolumeEntity;
 import by.space.personalization.preferences.enums.PreferenceTimeKind;
 import by.space.personalization.preferences.enums.VolumeLevel;
 import by.space.personalization.preferences.repository.PreferenceAddressRepository;
 import by.space.personalization.preferences.repository.PreferenceDayRepository;
 import by.space.personalization.preferences.repository.PreferenceGenreRepository;
+import by.space.personalization.preferences.repository.PreferencePlaylistRepository;
 import by.space.personalization.preferences.repository.PreferenceRepository;
 import by.space.personalization.preferences.repository.PreferenceScheduleBlockRepository;
 import by.space.personalization.preferences.repository.PreferenceScheduleDateRepository;
 import by.space.personalization.preferences.repository.PreferenceTimeRepository;
+import by.space.personalization.preferences.repository.PreferenceTrackRepository;
 import by.space.personalization.preferences.repository.PreferenceVolumeRepository;
 import by.space.personalization.preferences.service.PreferenceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,7 +41,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +53,8 @@ public class PreferenceServiceImpl implements PreferenceService {
     private final PreferenceRepository preferenceRepository;
     private final PreferenceAddressRepository preferenceAddressRepository;
     private final PreferenceGenreRepository preferenceGenreRepository;
+    private final PreferenceTrackRepository preferenceTrackRepository;
+    private final PreferencePlaylistRepository preferencePlaylistRepository;
     private final PreferenceVolumeRepository preferenceVolumeRepository;
     private final PreferenceScheduleBlockRepository preferenceScheduleBlockRepository;
     private final PreferenceDayRepository preferenceDayRepository;
@@ -51,7 +63,7 @@ public class PreferenceServiceImpl implements PreferenceService {
 
     @Override
     @Transactional
-    public Long create(CreatePreferenceRequest request) {
+    public Long create(final CreatePreferenceRequest request) {
         final PreferenceEntity preference = PreferenceEntity.builder()
             .userId(request.getUserId())
             .venueId(request.getVenueId())
@@ -71,9 +83,102 @@ public class PreferenceServiceImpl implements PreferenceService {
         return preferenceId;
     }
 
-    private void saveAddresses(Long preferenceId, List<Long> addressIds) {
-        Set<Long> uniqueAddressIds = toUniqueLongSet(addressIds);
-        List<PreferenceAddressEntity> entities = uniqueAddressIds.stream()
+    @Override
+    @Transactional(readOnly = true)
+    public List<PreferenceDetailsResponse> findByVenue(final Long venueId, Long userId) {
+        final List<PreferenceEntity> preferences;
+        if (Objects.isNull(userId)) {
+            preferences = preferenceRepository.findByVenueIdAndDeletedFalseOrderByCreatedAtDesc(venueId);
+        } else {
+            preferences = preferenceRepository.findByVenueIdAndUserIdAndDeletedFalseOrderByCreatedAtDesc(venueId, userId);
+        }
+
+        return preferences.stream()
+            .map(this::toDetailsResponse)
+            .toList();
+    }
+
+    @Override
+    @Transactional
+    public void delete(final Long preferenceId, final Long userId) {
+        final PreferenceEntity preference = preferenceRepository.findByIdAndDeletedFalse(preferenceId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Preference not found"));
+
+        if (Objects.nonNull(userId) && !Objects.equals(userId, preference.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Preference belongs to another user");
+        }
+
+        preference.setDeleted(true);
+        preference.setUpdatedAt(LocalDateTime.now());
+        preferenceRepository.save(preference);
+    }
+
+    private PreferenceDetailsResponse toDetailsResponse(final PreferenceEntity preference) {
+        final Long preferenceId = preference.getId();
+        return PreferenceDetailsResponse.builder()
+            .preferenceId(preferenceId)
+            .userId(preference.getUserId())
+            .venueId(preference.getVenueId())
+            .timeIrrelevant(preference.isTimeIrrelevant())
+            .createdAt(preference.getCreatedAt())
+            .addressIds(preferenceAddressRepository.findByPreferenceId(preferenceId).stream()
+                .map(PreferenceAddressEntity::getAddressId)
+                .toList())
+            .genreIds(preferenceGenreRepository.findByPreferenceId(preferenceId).stream()
+                .map(PreferenceGenreEntity::getGenreId)
+                .toList())
+            .trackIds(preferenceTrackRepository.findByPreferenceId(preferenceId).stream()
+                .map(PreferenceTrackEntity::getTrackId)
+                .toList())
+            .playlistIds(preferencePlaylistRepository.findByPreferenceId(preferenceId).stream()
+                .map(PreferencePlaylistEntity::getPlaylistId)
+                .toList())
+            .volumeLevels(preferenceVolumeRepository.findByPreferenceId(preferenceId).stream()
+                .map(v -> v.getVolumeLevel().name())
+                .toList())
+            .scheduleBlocks(toScheduleBlockResponse(preferenceId))
+            .build();
+    }
+
+    private List<PreferenceScheduleBlockResponse> toScheduleBlockResponse(final Long preferenceId) {
+        return preferenceScheduleBlockRepository.findByPreferenceIdOrderBySortOrderAsc(preferenceId).stream()
+            .map(block -> {
+                final List<Integer> weekDays = preferenceDayRepository.findByBlockIdOrderByWeekdayAsc(block.getId()).stream()
+                    .map(day -> day.getWeekday().intValue())
+                    .toList();
+
+                final List<PreferenceTimeEntity> times = preferenceTimeRepository.findByBlockIdOrderBySortOrderAsc(block.getId());
+                final List<String> presets = times.stream()
+                    .filter(time -> time.getTimeKind() == PreferenceTimeKind.PRESET && time.getPresetCode() != null)
+                    .map(PreferenceTimeEntity::getPresetCode)
+                    .toList();
+                final List<CustomIntervalRequest> customIntervals = times.stream()
+                    .filter(time -> time.getTimeKind() == PreferenceTimeKind.CUSTOM && time.getTimeFrom() != null && time.getTimeTo() != null)
+                    .map(time -> new CustomIntervalRequest(
+                        time.getTimeFrom().format(TIME_FORMATTER),
+                        time.getTimeTo().format(TIME_FORMATTER)
+                    ))
+                    .collect(Collectors.toList());
+
+                final List<String> specificDates = preferenceScheduleDateRepository.findByBlockIdOrderBySpecificDateAsc(block.getId()).stream()
+                    .map(date -> date.getSpecificDate().toString())
+                    .toList();
+
+                return PreferenceScheduleBlockResponse.builder()
+                    .blockId(block.getId())
+                    .sortOrder(block.getSortOrder())
+                    .weekDays(weekDays)
+                    .timePresets(presets)
+                    .customIntervals(customIntervals)
+                    .specificDates(specificDates)
+                    .build();
+            })
+            .toList();
+    }
+
+    private void saveAddresses(final Long preferenceId, final List<Long> addressIds) {
+        final Set<Long> uniqueAddressIds = toUniqueLongSet(addressIds);
+        final List<PreferenceAddressEntity> entities = uniqueAddressIds.stream()
             .map(addressId -> PreferenceAddressEntity.builder()
                 .preferenceId(preferenceId)
                 .addressId(addressId)
@@ -83,9 +188,9 @@ public class PreferenceServiceImpl implements PreferenceService {
         preferenceAddressRepository.saveAll(entities);
     }
 
-    private void saveGenres(Long preferenceId, List<Long> genreIds) {
-        Set<Long> uniqueGenreIds = toUniqueLongSet(genreIds);
-        List<PreferenceGenreEntity> entities = uniqueGenreIds.stream()
+    private void saveGenres(final Long preferenceId, final List<Long> genreIds) {
+        final Set<Long> uniqueGenreIds = toUniqueLongSet(genreIds);
+        final List<PreferenceGenreEntity> entities = uniqueGenreIds.stream()
             .map(genreId -> PreferenceGenreEntity.builder()
                 .preferenceId(preferenceId)
                 .genreId(genreId)
@@ -95,17 +200,17 @@ public class PreferenceServiceImpl implements PreferenceService {
         preferenceGenreRepository.saveAll(entities);
     }
 
-    private void saveVolumes(Long preferenceId, List<String> volumeLevels) {
-        Set<VolumeLevel> uniqueLevels = new LinkedHashSet<>();
-        if (volumeLevels != null) {
-            for (String raw : volumeLevels) {
-                if (raw == null || raw.isBlank()) {
+    private void saveVolumes(final Long preferenceId, final List<String> volumeLevels) {
+        final Set<VolumeLevel> uniqueLevels = new LinkedHashSet<>();
+        if (Objects.nonNull(volumeLevels)) {
+            for (final String raw : volumeLevels) {
+                if (Objects.isNull(raw) || raw.isBlank()) {
                     continue;
                 }
                 uniqueLevels.add(VolumeLevel.valueOf(raw.trim().toUpperCase(Locale.ROOT)));
             }
         }
-        List<PreferenceVolumeEntity> entities = uniqueLevels.stream()
+        final List<PreferenceVolumeEntity> entities = uniqueLevels.stream()
             .map(level -> PreferenceVolumeEntity.builder()
                 .preferenceId(preferenceId)
                 .volumeLevel(level)
@@ -115,8 +220,8 @@ public class PreferenceServiceImpl implements PreferenceService {
         preferenceVolumeRepository.saveAll(entities);
     }
 
-    private void saveSchedule(Long preferenceId, List<ScheduleBlockRequest> scheduleBlocks) {
-        if (scheduleBlocks == null || scheduleBlocks.isEmpty()) {
+    private void saveSchedule(final Long preferenceId, final List<ScheduleBlockRequest> scheduleBlocks) {
+        if (Objects.isNull(scheduleBlocks) || scheduleBlocks.isEmpty()) {
             return;
         }
         for (int i = 0; i < scheduleBlocks.size(); i++) {
@@ -127,7 +232,7 @@ public class PreferenceServiceImpl implements PreferenceService {
                     .sortOrder(i)
                     .build()
             );
-            Long blockId = savedBlock.getId();
+            final Long blockId = savedBlock.getId();
 
             saveWeekDays(blockId, block.getWeekDays());
             saveTimeRows(blockId, block.getTimePresets(), block.getCustomIntervals(), Boolean.TRUE.equals(block.getTimeIrrelevant()));
@@ -135,12 +240,12 @@ public class PreferenceServiceImpl implements PreferenceService {
         }
     }
 
-    private void saveWeekDays(Long blockId, List<Integer> weekDays) {
+    private void saveWeekDays(final Long blockId, final List<Integer> weekDays) {
         if (weekDays == null || weekDays.isEmpty()) {
             return;
         }
-        Set<Integer> uniqueDays = new LinkedHashSet<>(weekDays);
-        List<PreferenceDayEntity> entities = uniqueDays.stream()
+        final Set<Integer> uniqueDays = new LinkedHashSet<>(weekDays);
+        final List<PreferenceDayEntity> entities = uniqueDays.stream()
             .map(day -> PreferenceDayEntity.builder()
                 .blockId(blockId)
                 .weekday(day.byteValue())
@@ -149,7 +254,12 @@ public class PreferenceServiceImpl implements PreferenceService {
         preferenceDayRepository.saveAll(entities);
     }
 
-    private void saveTimeRows(Long blockId, List<String> presets, List<CustomIntervalRequest> intervals, boolean timeIrrelevant) {
+    private void saveTimeRows(
+        final Long blockId,
+        final List<String> presets,
+        final List<CustomIntervalRequest> intervals,
+        final boolean timeIrrelevant
+    ) {
         if (timeIrrelevant) {
             return;
         }

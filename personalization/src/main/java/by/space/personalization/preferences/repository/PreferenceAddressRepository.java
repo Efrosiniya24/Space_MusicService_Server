@@ -4,6 +4,9 @@ import by.space.personalization.preferences.entity.PreferenceAddressEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface PreferenceAddressRepository extends JpaRepository<PreferenceAddressEntity, Long> {
+    List<PreferenceAddressEntity> findByPreferenceId(Long preferenceId);
 }
