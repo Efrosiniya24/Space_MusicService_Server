@@ -1,4 +1,28 @@
 services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.4
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:9200/_cluster/health?wait_for_status=yellow&timeout=5s >/dev/null || exit 1",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 60s
+    networks:
+      - space-net
+
   users:
     image: mysql:8.0
     environment:
@@ -54,8 +78,12 @@ services:
       dockerfile: users_service/Dockerfile
     container_name: users_service
     depends_on:
-      - eureka
-      - users
+      eureka:
+        condition: service_started
+      users:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
 
     environment:
       - SPRING_PROFILES_ACTIVE=docker
@@ -63,6 +91,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://users:3306/users
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=1111
+      - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
     networks:
       - space-net
 
@@ -88,17 +117,25 @@ services:
       dockerfile: media-content/Dockerfile
     container_name: media-content
     depends_on:
-      - eureka
-      - media
-      - users-service
-      - auth-service
-      - minio
+      eureka:
+        condition: service_started
+      media:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+      users-service:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      minio:
+        condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:mysql://media:3306/media
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=1111
+      - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
       - MINIO_URL=http://minio:9000
       - MINIO_ACCESS_KEY=space24
       - MINIO_SECRET_KEY=34fhj84wjfelw
@@ -181,3 +218,4 @@ volumes:
   db_users_data:
   db_media_data:
   db_pref_data:
+  es_data:

@@ -21,6 +21,14 @@ public interface VenueService {
     List<VenueDto> getAllVenues();
 
     /**
+     * Full-text search venues by name.
+     *
+     * @param query search string
+     * @return list of matching venues
+     */
+    List<VenueDto> searchVenues(String query);
+
+    /**
      * Venues that have at least one active address in the given status;
      * response includes all active addresses for each venue.
      *

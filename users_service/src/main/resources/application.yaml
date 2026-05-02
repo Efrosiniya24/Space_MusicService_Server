@@ -9,6 +9,8 @@ spring:
     password: 1111
     username: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+  elasticsearch:
+    uris: http://elasticsearch:9200
   jpa:
     show-sql: true
     hibernate:

@@ -5,21 +5,28 @@ import by.space.users_service.mapper.VenueMapper;
 import by.space.users_service.model.dto.VenueAddressDto;
 import by.space.users_service.model.dto.VenueCuratorDto;
 import by.space.users_service.model.dto.VenueDto;
+import by.space.users_service.model.elasticsearch.VenueSearchDocument;
+import by.space.users_service.model.elasticsearch.VenueSearchRepository;
 import by.space.users_service.model.mysql.domain.venue.VenueEntity;
 import by.space.users_service.model.mysql.domain.venue.VenueRepository;
 import by.space.users_service.service.AddressService;
 import by.space.users_service.service.VenueCuratorService;
 import by.space.users_service.service.VenueService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VenueServiceImpl implements VenueService {
@@ -27,6 +34,7 @@ public class VenueServiceImpl implements VenueService {
     private final VenueMapper venueMapper;
     private final VenueCuratorService venueCuratorService;
     private final AddressService addressService;
+    private final VenueSearchRepository venueSearchRepository;
 
     @Override
     public List<VenueDto> getAllConfirmedVenues() {
@@ -49,6 +57,46 @@ public class VenueServiceImpl implements VenueService {
             final List<VenueAddressDto> addresses = addressService.getAllActiveVenueAddresses(venue.getId());
             venue.setAddresses(addresses);
         });
+        return venues;
+    }
+
+    @Override
+    public List<VenueDto> searchVenues(final String query) {
+        if (Objects.isNull(query) || query.trim().isEmpty()) {
+            return getAllVenues();
+        }
+
+        final String q = query.trim();
+        try {
+            final List<VenueSearchDocument> docs =
+                venueSearchRepository.findByNameContainingIgnoreCaseAndDeletedFalse(q);
+            if (docs.isEmpty()) {
+                return List.of();
+            }
+
+            final List<Long> ids = docs.stream().map(VenueSearchDocument::getId).toList();
+            final Map<Long, Integer> order = new HashMap<>();
+            for (int i = 0; i < ids.size(); i++) {
+                order.put(ids.get(i), i);
+            }
+
+            final List<VenueDto> venues = venueMapper.mapToVenueDto(venueRepository.findAllById(ids)).stream()
+                .filter(venue -> !venue.isDeleted())
+                .sorted(Comparator.comparingInt(v -> order.getOrDefault(v.getId(), Integer.MAX_VALUE)))
+                .collect(Collectors.toList());
+            venues.forEach(venue -> venue.setAddresses(addressService.getAllActiveVenueAddresses(venue.getId())));
+            return venues;
+        } catch (final Exception ex) {
+            log.warn("Elasticsearch venue search failed, using DB fallback: {}", ex.toString());
+            return searchVenuesFromDb(q);
+        }
+    }
+
+    private List<VenueDto> searchVenuesFromDb(final String q) {
+        final List<VenueDto> venues = venueMapper.mapToVenueDto(
+            venueRepository.findByDeletedFalseAndNameContainingIgnoreCase(q));
+        venues.sort(Comparator.comparing(VenueDto::getId));
+        venues.forEach(venue -> venue.setAddresses(addressService.getAllActiveVenueAddresses(venue.getId())));
         return venues;
     }
 
@@ -77,6 +125,16 @@ public class VenueServiceImpl implements VenueService {
 
         venueCuratorService.createVenueCurator(
             venueDto.getOwnerId(), savedVenue.getId(), addressesId, true);
+
+        try {
+            venueSearchRepository.save(VenueSearchDocument.builder()
+                .id(savedVenue.getId())
+                .name(savedVenue.getName())
+                .deleted(savedVenue.isDeleted())
+                .build());
+        } catch (final Exception ex) {
+            log.warn("Could not index venue in Elasticsearch: {}", ex.toString());
+        }
 
         final VenueDto result = venueMapper.mapToVenueDto(savedVenue);
         result.setAddresses(addresses);

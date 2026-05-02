@@ -3,6 +3,8 @@ package by.space.mediacontent.artist.application.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class ArtistCreateDto {
@@ -10,4 +12,6 @@ public class ArtistCreateDto {
     private String name;
     private String cover;
     private String description;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

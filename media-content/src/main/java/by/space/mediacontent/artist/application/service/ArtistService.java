@@ -2,6 +2,8 @@ package by.space.mediacontent.artist.application.service;
 
 import by.space.mediacontent.artist.application.dto.ArtistCreateDto;
 
+import java.util.List;
+
 public interface ArtistService {
     /**
      * method for creation artist
@@ -10,4 +12,8 @@ public interface ArtistService {
      * @return saving artist
      */
     ArtistCreateDto createArtist(ArtistCreateDto artistCreateDto);
+
+    List<ArtistCreateDto> getAllArtists();
+
+    List<ArtistCreateDto> searchArtists(String query);
 }
