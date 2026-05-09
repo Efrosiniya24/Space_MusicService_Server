@@ -1,5 +1,6 @@
 package by.space.auth_service.service.impl;
 
+import by.space.auth_service.enums.Role;
 import by.space.auth_service.model.dto.UserDto;
 import by.space.auth_service.service.JwtService;
 import io.jsonwebtoken.Claims;
@@ -18,8 +19,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +32,8 @@ public class JwtServiceImpl implements JwtService {
     public String generateAccessToken(final UserDto user) {
         final Map<String, Object> claims = new HashMap<>();
 
-        var roles = (user.getRoles() == null || user.getRoles().isEmpty())
-            ? java.util.List.of(by.space.auth_service.enums.Role.LISTENER)
+        var roles = (Objects.isNull(user.getRoles()) || user.getRoles().isEmpty())
+            ? List.of(Role.LISTENER)
             : user.getRoles();
 
         var roleNames = roles.stream().map(Enum::name).toList();

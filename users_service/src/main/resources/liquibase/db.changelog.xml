@@ -35,4 +35,20 @@
         <dropColumn tableName="venue" columnName="status"/>
     </changeSet>
 
+    <changeSet id="venue-drop-cover-column" author="space">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="venue" columnName="cover"/>
+        </preConditions>
+        <dropColumn tableName="venue" columnName="cover"/>
+    </changeSet>
+
+    <changeSet id="venue-drop-cover-id-column" author="space">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="venue" columnName="cover_id"/>
+        </preConditions>
+        <dropColumn tableName="venue" columnName="cover_id"/>
+    </changeSet>
+
+    <include file="changes/changelog-users-foreign-keys.xml" relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

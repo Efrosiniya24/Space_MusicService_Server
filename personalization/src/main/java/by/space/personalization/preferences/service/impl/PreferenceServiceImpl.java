@@ -15,6 +15,7 @@ import by.space.personalization.preferences.entity.PreferenceScheduleDateEntity;
 import by.space.personalization.preferences.entity.PreferenceTimeEntity;
 import by.space.personalization.preferences.entity.PreferenceTrackEntity;
 import by.space.personalization.preferences.entity.PreferenceVolumeEntity;
+import by.space.personalization.preferences.enums.PreferencePresetCode;
 import by.space.personalization.preferences.enums.PreferenceTimeKind;
 import by.space.personalization.preferences.enums.VolumeLevel;
 import by.space.personalization.preferences.repository.PreferenceAddressRepository;
@@ -150,7 +151,7 @@ public class PreferenceServiceImpl implements PreferenceService {
                 final List<PreferenceTimeEntity> times = preferenceTimeRepository.findByBlockIdOrderBySortOrderAsc(block.getId());
                 final List<String> presets = times.stream()
                     .filter(time -> time.getTimeKind() == PreferenceTimeKind.PRESET && time.getPresetCode() != null)
-                    .map(PreferenceTimeEntity::getPresetCode)
+                    .map(t -> t.getPresetCode().toWireValue())
                     .toList();
                 final List<CustomIntervalRequest> customIntervals = times.stream()
                     .filter(time -> time.getTimeKind() == PreferenceTimeKind.CUSTOM && time.getTimeFrom() != null && time.getTimeTo() != null)
@@ -225,8 +226,8 @@ public class PreferenceServiceImpl implements PreferenceService {
             return;
         }
         for (int i = 0; i < scheduleBlocks.size(); i++) {
-            ScheduleBlockRequest block = scheduleBlocks.get(i);
-            PreferenceScheduleBlockEntity savedBlock = preferenceScheduleBlockRepository.save(
+            final ScheduleBlockRequest block = scheduleBlocks.get(i);
+            final PreferenceScheduleBlockEntity savedBlock = preferenceScheduleBlockRepository.save(
                 PreferenceScheduleBlockEntity.builder()
                     .preferenceId(preferenceId)
                     .sortOrder(i)
@@ -241,7 +242,7 @@ public class PreferenceServiceImpl implements PreferenceService {
     }
 
     private void saveWeekDays(final Long blockId, final List<Integer> weekDays) {
-        if (weekDays == null || weekDays.isEmpty()) {
+        if (Objects.isNull(weekDays) || weekDays.isEmpty()) {
             return;
         }
         final Set<Integer> uniqueDays = new LinkedHashSet<>(weekDays);
@@ -265,26 +266,26 @@ public class PreferenceServiceImpl implements PreferenceService {
         }
 
         int sortOrder = 0;
-        if (presets != null) {
-            Set<String> uniquePresets = new LinkedHashSet<>(presets);
-            for (String preset : uniquePresets) {
-                if (preset == null || preset.isBlank()) {
+        if (Objects.nonNull(presets)) {
+            final Set<String> uniquePresets = new LinkedHashSet<>(presets);
+            for (final String preset : uniquePresets) {
+                if (Objects.isNull(preset) || preset.isBlank()) {
                     continue;
                 }
                 preferenceTimeRepository.save(
                     PreferenceTimeEntity.builder()
                         .blockId(blockId)
                         .timeKind(PreferenceTimeKind.PRESET)
-                        .presetCode(preset.trim())
+                        .presetCode(PreferencePresetCode.fromWire(preset))
                         .sortOrder(sortOrder++)
                         .build()
                 );
             }
         }
 
-        if (intervals != null) {
-            for (CustomIntervalRequest interval : intervals) {
-                if (interval == null || interval.getFrom() == null || interval.getTo() == null) {
+        if (Objects.nonNull(intervals)) {
+            for (final CustomIntervalRequest interval : intervals) {
+                if (Objects.isNull(interval) || Objects.isNull(interval.getFrom()) || Objects.isNull(interval.getTo())) {
                     continue;
                 }
                 preferenceTimeRepository.save(
@@ -301,11 +302,11 @@ public class PreferenceServiceImpl implements PreferenceService {
     }
 
     private void saveSpecificDates(Long blockId, List<String> specificDates) {
-        if (specificDates == null || specificDates.isEmpty()) {
+        if (Objects.isNull(specificDates) || specificDates.isEmpty()) {
             return;
         }
-        Set<String> uniqueDates = new LinkedHashSet<>(specificDates);
-        List<PreferenceScheduleDateEntity> entities = uniqueDates.stream()
+        final Set<String> uniqueDates = new LinkedHashSet<>(specificDates);
+        final List<PreferenceScheduleDateEntity> entities = uniqueDates.stream()
             .filter(value -> value != null && !value.isBlank())
             .map(value -> PreferenceScheduleDateEntity.builder()
                 .blockId(blockId)
@@ -315,25 +316,25 @@ public class PreferenceServiceImpl implements PreferenceService {
         preferenceScheduleDateRepository.saveAll(entities);
     }
 
-    private Set<Long> toUniqueLongSet(List<Long> values) {
-        Set<Long> result = new LinkedHashSet<>();
-        if (values == null) {
+    private Set<Long> toUniqueLongSet(final List<Long> values) {
+        final Set<Long> result = new LinkedHashSet<>();
+        if (Objects.isNull(values)) {
             return result;
         }
-        for (Long value : values) {
-            if (value != null) {
+        for (final Long value : values) {
+            if (Objects.nonNull(value)) {
                 result.add(value);
             }
         }
         return result;
     }
 
-    private boolean hasGlobalTimeIrrelevant(List<ScheduleBlockRequest> scheduleBlocks) {
-        if (scheduleBlocks == null) {
+    private boolean hasGlobalTimeIrrelevant(final List<ScheduleBlockRequest> scheduleBlocks) {
+        if (Objects.isNull(scheduleBlocks)) {
             return false;
         }
-        for (ScheduleBlockRequest scheduleBlock : scheduleBlocks) {
-            if (scheduleBlock != null && Boolean.TRUE.equals(scheduleBlock.getTimeIrrelevant())) {
+        for (final ScheduleBlockRequest scheduleBlock : scheduleBlocks) {
+            if (Objects.nonNull(scheduleBlock) && Objects.equals(Boolean.TRUE, scheduleBlock.getTimeIrrelevant())) {
                 return true;
             }
         }

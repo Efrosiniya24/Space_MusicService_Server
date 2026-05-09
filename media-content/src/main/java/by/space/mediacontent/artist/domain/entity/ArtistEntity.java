@@ -27,7 +27,7 @@ public class ArtistEntity {
     private Long id;
     @Column(nullable = false)
     private String name;
-    private String cover;
+    private Long idCover;
     private String description;
     @Column(name = "is_deleted")
     private boolean deleted = false;

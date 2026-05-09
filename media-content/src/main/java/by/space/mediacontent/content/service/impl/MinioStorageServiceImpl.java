@@ -4,6 +4,7 @@ import by.space.mediacontent.content.service.MinioStorageService;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,20 @@ public class MinioStorageServiceImpl implements MinioStorageService {
         try {
             return minioClient.getObject(
                 GetObjectArgs.builder()
+                    .bucket(bucket)
+                    .object(objectName)
+                    .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteObject(final String objectName) {
+        try {
+            minioClient.removeObject(
+                RemoveObjectArgs.builder()
                     .bucket(bucket)
                     .object(objectName)
                     .build()

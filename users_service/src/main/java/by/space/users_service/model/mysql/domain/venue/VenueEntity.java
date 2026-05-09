@@ -28,7 +28,6 @@ public class VenueEntity {
     @Column(unique = true, nullable = false)
     private String name;
     private String email;
-    private String cover;
     private String description;
     private String urlWebSite;
     private String phone;

@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <property name="bool.type" global="false" value="BOOLEAN"/>
+
+    <changeSet id="media-content-create-genre" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="genre"/>
+            </not>
+        </preConditions>
+        <createTable tableName="genre">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="deleted" type="${bool.type}" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="media-content-create-image" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="image"/>
+            </not>
+        </preConditions>
+        <createTable tableName="image">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_owner" type="BIGINT"/>
+            <column name="bucket" type="VARCHAR(255)"/>
+            <column name="object_key" type="VARCHAR(1024)"/>
+            <column name="file_name" type="VARCHAR(512)"/>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="updated_at" type="datetime(6)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="media-content-create-artist" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artist"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artist">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="id_cover" type="BIGINT"/>
+            <column name="description" type="VARCHAR(4000)"/>
+            <column name="is_deleted" type="${bool.type}" defaultValueBoolean="false"/>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="updated_at" type="datetime(6)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="media-content-create-track" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="track"/>
+            </not>
+        </preConditions>
+        <createTable tableName="track">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(512)"/>
+            <column name="duration" type="BIGINT"/>
+            <column name="id_cover" type="BIGINT"/>
+            <column name="bucket" type="VARCHAR(255)"/>
+            <column name="object_key" type="VARCHAR(1024)"/>
+            <column name="removed" type="${bool.type}" defaultValueBoolean="false"/>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="updated_at" type="datetime(6)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="media-content-create-playlist" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="playlist"/>
+            </not>
+        </preConditions>
+        <createTable tableName="playlist">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(512)"/>
+            <column name="id_cover" type="BIGINT"/>
+            <column name="id_creator" type="BIGINT"/>
+            <column name="removed" type="${bool.type}" defaultValueBoolean="false"/>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="updated_at" type="datetime(6)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="media-content-create-track-genre" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="track_genre"/>
+            </not>
+        </preConditions>
+        <createTable tableName="track_genre">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_track" type="BIGINT"/>
+            <column name="id_genre" type="BIGINT"/>
+            <column name="added_at" type="datetime(6)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="track_genre" baseColumnNames="id_track"
+                                 constraintName="fk_track_genre_track"
+                                 referencedTableName="track" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="track_genre" baseColumnNames="id_genre"
+                                 constraintName="fk_track_genre_genre"
+                                 referencedTableName="genre" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-create-track-artist" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="track_artist"/>
+            </not>
+        </preConditions>
+        <createTable tableName="track_artist">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="track_id" type="BIGINT"/>
+            <column name="artist_id" type="BIGINT"/>
+            <column name="added_at" type="datetime(6)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="track_artist" baseColumnNames="track_id"
+                                 constraintName="fk_track_artist_track"
+                                 referencedTableName="track" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="track_artist" baseColumnNames="artist_id"
+                                 constraintName="fk_track_artist_artist"
+                                 referencedTableName="artist" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-create-track-playlist" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="track_playlist"/>
+            </not>
+        </preConditions>
+        <createTable tableName="track_playlist">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_playlist" type="BIGINT"/>
+            <column name="id_track" type="BIGINT"/>
+            <column name="removed" type="${bool.type}" defaultValueBoolean="false"/>
+            <column name="added_at" type="datetime(6)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="track_playlist" baseColumnNames="id_playlist"
+                                 constraintName="fk_track_playlist_playlist"
+                                 referencedTableName="playlist" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="track_playlist" baseColumnNames="id_track"
+                                 constraintName="fk_track_playlist_track"
+                                 referencedTableName="track" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-create-playlist-user-venue" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="playlist_user_venue"/>
+            </not>
+        </preConditions>
+        <createTable tableName="playlist_user_venue">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_playlist" type="BIGINT"/>
+            <column name="id_user" type="BIGINT"/>
+            <column name="venue_id" type="BIGINT"/>
+            <column name="added_at" type="datetime(6)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="playlist_user_venue" baseColumnNames="id_playlist"
+                                 constraintName="fk_playlist_user_venue_playlist"
+                                 referencedTableName="playlist" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-create-artist-track" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artist_track"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artist_track">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="artist_id" type="BIGINT"/>
+            <column name="track_id" type="BIGINT"/>
+            <column name="deleted" type="${bool.type}" defaultValueBoolean="false"/>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="deleted_at" type="datetime(6)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="artist_track" baseColumnNames="artist_id"
+                                 constraintName="fk_artist_track_artist"
+                                 referencedTableName="artist" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="artist_track" baseColumnNames="track_id"
+                                 constraintName="fk_artist_track_track"
+                                 referencedTableName="track" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-create-artist-playlist" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artist_playlist"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artist_playlist">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="artist_id" type="BIGINT"/>
+            <column name="playlist_id" type="BIGINT"/>
+            <column name="deleted" type="${bool.type}" defaultValueBoolean="false"/>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="deleted_at" type="datetime(6)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="artist_playlist" baseColumnNames="artist_id"
+                                 constraintName="fk_artist_playlist_artist"
+                                 referencedTableName="artist" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="artist_playlist" baseColumnNames="playlist_id"
+                                 constraintName="fk_artist_playlist_playlist"
+                                 referencedTableName="playlist" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-create-image-venue" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="image_venue"/>
+            </not>
+        </preConditions>
+        <createTable tableName="image_venue">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="image_id" type="BIGINT"/>
+            <column name="venue_id" type="BIGINT"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="image_venue" baseColumnNames="image_id"
+                                 constraintName="fk_image_venue_image"
+                                 referencedTableName="image" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-create-venue-documents" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="venue_documents"/>
+            </not>
+        </preConditions>
+        <createTable tableName="venue_documents">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="venue_id" type="BIGINT"/>
+            <column name="venue_address_id" type="BIGINT"/>
+            <column name="url" type="VARCHAR(2048)"/>
+            <column name="title" type="VARCHAR(512)"/>
+            <column name="bucket" type="VARCHAR(255)"/>
+            <column name="object_key" type="VARCHAR(1024)"/>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="removed" type="${bool.type}" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+    <!-- FK на image: id_cover; image_venue.image_id — отдельные changeset’ы для БД, где таблица уже есть, а ключ не создался (напр. MARK_RAN при существующей таблице) -->
+    <changeSet id="media-content-add-fk-artist-id-cover-image" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="artist"/>
+                <tableExists tableName="image"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyName="fk_artist_id_cover_image"
+                                                foreignKeyTableName="artist"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="artist" baseColumnNames="id_cover"
+                                 constraintName="fk_artist_id_cover_image"
+                                 referencedTableName="image" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-add-fk-track-id-cover-image" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="track"/>
+                <tableExists tableName="image"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyName="fk_track_id_cover_image"
+                                                foreignKeyTableName="track"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="track" baseColumnNames="id_cover"
+                                 constraintName="fk_track_id_cover_image"
+                                 referencedTableName="image" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-add-fk-playlist-id-cover-image" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="playlist"/>
+                <tableExists tableName="image"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyName="fk_playlist_id_cover_image"
+                                                foreignKeyTableName="playlist"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="playlist" baseColumnNames="id_cover"
+                                 constraintName="fk_playlist_id_cover_image"
+                                 referencedTableName="image" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-image-is-deleted" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="image"/>
+                <not>
+                    <columnExists tableName="image" columnName="is_deleted"/>
+                </not>
+            </and>
+        </preConditions>
+        <addColumn tableName="image">
+            <column name="is_deleted" type="${bool.type}" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="media-content-add-fk-image-venue-image-id" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="image_venue"/>
+                <tableExists tableName="image"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyName="fk_image_venue_image"
+                                                foreignKeyTableName="image_venue"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="image_venue" baseColumnNames="image_id"
+                                 constraintName="fk_image_venue_image"
+                                 referencedTableName="image" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="media-content-create-artist-role" author="space">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artist_role"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artist_role">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="artist_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="artist_role" baseColumnNames="artist_id"
+                                 constraintName="fk_artist_role_artist"
+                                 referencedTableName="artist" referencedColumnNames="id"/>
+        <addUniqueConstraint tableName="artist_role"
+                             columnNames="artist_id, role_name"
+                             constraintName="uq_artist_role_artist_id_role_name"/>
+    </changeSet>
+
+    <changeSet id="media-content-artist-role-normalize-enum-values" author="space">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="artist_role"/>
+        </preConditions>
+        <update tableName="artist_role">
+            <column name="role_name" value="SINGER"/>
+            <where>role_name = 'Исполнитель'</where>
+        </update>
+        <update tableName="artist_role">
+            <column name="role_name" value="COMPOSER"/>
+            <where>role_name = 'Композитор'</where>
+        </update>
+        <update tableName="artist_role">
+            <column name="role_name" value="PRODUCER"/>
+            <where>role_name = 'Продюсер'</where>
+        </update>
+        <update tableName="artist_role">
+            <column name="role_name" value="AUTHOR"/>
+            <where>role_name = 'Автор'</where>
+        </update>
+        <update tableName="artist_role">
+            <column name="role_name" value="INSTRUMENTALIST"/>
+            <where>role_name = 'Инструменталист'</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="media-content-track-genre-source-confidence" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="track_genre"/>
+                <not>
+                    <columnExists tableName="track_genre" columnName="source"/>
+                </not>
+            </and>
+        </preConditions>
+
+        <addColumn tableName="track_genre">
+            <column name="source" type="VARCHAR(32)" defaultValue="MANUAL"/>
+        </addColumn>
+        <addColumn tableName="track_genre">
+            <column name="confidence" type="DECIMAL(5,4)"/>
+        </addColumn>
+
+        <update tableName="track_genre">
+            <column name="source" value="MANUAL"/>
+            <where>source IS NULL</where>
+        </update>
+
+        <addNotNullConstraint tableName="track_genre"
+                              columnName="source"
+                              columnDataType="VARCHAR(32)"/>
+    </changeSet>
+
+    <changeSet id="media-content-track-is-single-flag" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="track"/>
+                <not>
+                    <columnExists tableName="track" columnName="is_single"/>
+                </not>
+            </and>
+        </preConditions>
+
+        <addColumn tableName="track">
+            <column name="is_single" type="${bool.type}" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <update tableName="track">
+            <column name="is_single" valueBoolean="false"/>
+            <where>id IN (SELECT DISTINCT id_track FROM track_playlist WHERE removed = false)</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

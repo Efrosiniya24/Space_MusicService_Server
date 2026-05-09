@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="users-fk-venue-address-venue-id" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="venue_address"/>
+                <tableExists tableName="venue"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyTableName="venue_address"
+                                                foreignKeyName="fk_venue_address_venue"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="venue_address" baseColumnNames="venue_id"
+                                 constraintName="fk_venue_address_venue"
+                                 referencedTableName="venue" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="users-fk-user-role-user-id" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="user_role"/>
+                <tableExists tableName="user"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyTableName="user_role"
+                                                foreignKeyName="fk_user_role_user"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="user_role" baseColumnNames="user_id"
+                                 constraintName="fk_user_role_user"
+                                 referencedTableName="user" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="users-fk-user-role-role-id" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="user_role"/>
+                <tableExists tableName="role"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyTableName="user_role"
+                                                foreignKeyName="fk_user_role_role"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="user_role" baseColumnNames="role_id"
+                                 constraintName="fk_user_role_role"
+                                 referencedTableName="role" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="users-fk-venue-curator-user-id" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="venue_curator"/>
+                <tableExists tableName="user"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyTableName="venue_curator"
+                                                foreignKeyName="fk_venue_curator_user"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="venue_curator" baseColumnNames="curator_id"
+                                 constraintName="fk_venue_curator_user"
+                                 referencedTableName="user" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="users-fk-venue-curator-venue-id" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="venue_curator"/>
+                <tableExists tableName="venue"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyTableName="venue_curator"
+                                                foreignKeyName="fk_venue_curator_venue"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="venue_curator" baseColumnNames="venue_id"
+                                 constraintName="fk_venue_curator_venue"
+                                 referencedTableName="venue" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="users-fk-venue-curator-address-id" author="space">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="venue_curator"/>
+                <tableExists tableName="venue_address"/>
+                <not>
+                    <foreignKeyConstraintExists foreignKeyTableName="venue_curator"
+                                                foreignKeyName="fk_venue_curator_venue_address"/>
+                </not>
+            </and>
+        </preConditions>
+        <addForeignKeyConstraint baseTableName="venue_curator" baseColumnNames="address_id"
+                                 constraintName="fk_venue_curator_venue_address"
+                                 referencedTableName="venue_address" referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

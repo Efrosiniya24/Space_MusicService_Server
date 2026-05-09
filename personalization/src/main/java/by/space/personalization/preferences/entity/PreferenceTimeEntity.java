@@ -1,5 +1,6 @@
 package by.space.personalization.preferences.entity;
 
+import by.space.personalization.preferences.enums.PreferencePresetCode;
 import by.space.personalization.preferences.enums.PreferenceTimeKind;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,8 +37,9 @@ public class PreferenceTimeEntity {
 	@Column(name = "time_kind", nullable = false, length = 16)
 	private PreferenceTimeKind timeKind;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "preset_code", length = 32)
-	private String presetCode;
+	private PreferencePresetCode presetCode;
 
 	@Column(name = "time_from")
 	private LocalTime timeFrom;

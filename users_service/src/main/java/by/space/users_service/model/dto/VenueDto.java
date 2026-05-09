@@ -16,7 +16,6 @@ public class VenueDto {
     private Long id;
     private String name;
     private String email;
-    private String cover;
     private String description;
     private String urlWebSite;
     private String phone;

@@ -1,5 +1,6 @@
 package by.space.mediacontent.content.domain.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,4 +31,6 @@ public class ImageEntity {
     private String fileName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    @Column(name = "is_deleted")
+    private boolean deleted = false;
 }

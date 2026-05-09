@@ -55,7 +55,7 @@ class AuthServiceImplTest {
 //
 //        UserDto user = mock(UserDto.class);
 //        when(user.getId()).thenReturn(10L);
-//        when(user.getRoles()).thenReturn(List.of(Role.LISTENER, Role.MUSIC_CURATOR, Role.SYSTEM_ADMIN));
+//        when(user.getRoles()).thenReturn(List.of(Role.LISTENER, Role.MUSIC_CURATOR, Role.PLATFORM_ADMIN));
 //
 //        when(userClient.getUser("a@mail.com")).thenReturn(user);
 //        when(jwtService.generateAccessToken(user)).thenReturn("jwt-token");
@@ -70,7 +70,7 @@ class AuthServiceImplTest {
 //        assertThat(response).isNotNull();
 //        assertThat(response.getAccessToken()).isEqualTo("jwt-token");
 //        assertThat(response.getUserId()).isEqualTo(10L);
-//        assertThat(response.getRoles()).containsExactly(Role.LISTENER, Role.MUSIC_CURATOR, Role.SYSTEM_ADMIN);
+//        assertThat(response.getRoles()).containsExactly(Role.LISTENER, Role.MUSIC_CURATOR, Role.PLATFORM_ADMIN);
 //
 //        verify(authenticationManager).authenticate(tokenCaptor.capture());
 //        UsernamePasswordAuthenticationToken captured = tokenCaptor.getValue();

@@ -8,5 +8,6 @@
 
     <include file="changes/changelog-preferences.xml" relativeToChangelogFile="true"/>
     <include file="changes/changelog-preferences-extension.xml" relativeToChangelogFile="true"/>
+    <include file="changes/changelog-preferences-preset-code-enum.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -13,7 +13,11 @@ public interface ArtistService {
      */
     ArtistCreateDto createArtist(ArtistCreateDto artistCreateDto);
 
+    ArtistCreateDto updateArtist(Long id, ArtistCreateDto artistCreateDto);
+
     List<ArtistCreateDto> getAllArtists();
 
     List<ArtistCreateDto> searchArtists(String query);
+
+    ArtistCreateDto getArtistById(Long id);
 }

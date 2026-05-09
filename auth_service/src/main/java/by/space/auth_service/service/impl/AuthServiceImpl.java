@@ -55,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalStateException("Passwords don't match");
         }
         try {
-            final Role role = request.getRole() != null ? request.getRole() : Role.LISTENER;
+            final Role role = Objects.nonNull(request.getRole()) ? request.getRole() : Role.LISTENER;
             final RegistrationRequestDto user = RegistrationRequestDto
                 .builder()
                 .email(request.getEmail())

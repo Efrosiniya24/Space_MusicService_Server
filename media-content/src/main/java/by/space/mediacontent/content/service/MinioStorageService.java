@@ -8,4 +8,6 @@ public interface MinioStorageService {
     String upload(MultipartFile file, String objectName);
 
     InputStream download(String objectName);
+
+    void deleteObject(String objectName);
 }

@@ -16,6 +16,21 @@ public interface ImageService {
     ImageDto addImage(MultipartFile file, Long ownerId);
 
     /**
+     * Deletes image metadata and object in object storage.
+     *
+     * @param imageId image id
+     */
+    void deleteImage(Long imageId);
+
+    /**
+     * Streams image bytes for a non-deleted image (e.g. artist cover).
+     *
+     * @param imageId image id
+     * @return resource and media type
+     */
+    VenueCoverStreamDto getImageStream(Long imageId);
+
+    /**
      * add venue cover
      *
      * @param file    file for saving

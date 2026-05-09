@@ -6,6 +6,8 @@
           http://www.liquibase.org/xml/ns/dbchangelog
           http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
 
+    <include file="changes/changelog-media-content-core.xml" relativeToChangelogFile="true"/>
+
     <changeSet id="venue-documents-add-venue-address-id" author="space">
         <preConditions onFail="MARK_RAN">
             <not>

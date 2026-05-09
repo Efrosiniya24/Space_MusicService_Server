@@ -43,13 +43,16 @@ public class ImageServiceImpl implements ImageService {
         );
         minioStorageService.upload(file, objectKey);
 
+        final LocalDateTime now = LocalDateTime.now();
         final ImageEntity savedImage = imageRepository.save(
             ImageEntity.builder()
                 .idOwner(ownerId)
                 .bucket(bucket)
                 .objectKey(objectKey)
                 .fileName(originalFilename)
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
+                .updatedAt(now)
+                .deleted(false)
                 .build());
 
         return imageMapper.toImageDto(savedImage);
@@ -70,11 +73,38 @@ public class ImageServiceImpl implements ImageService {
     @Override
     @Transactional(readOnly = true)
     public VenueCoverStreamDto getVenueCover(final Long venueId) {
-        final ImageVenueEntity link = imageVenueRepository
-            .findTopByVenueIdOrderByIdDesc(venueId)
+        final ImageEntity image = imageVenueRepository.findAllByVenueIdOrderByIdDesc(venueId).stream()
+            .map(link -> imageRepository.findById(link.getImageId()).orElse(null))
+            .filter(img -> img != null && !img.isDeleted())
+            .findFirst()
             .orElseThrow(() -> new NoSuchElementException("venue cover not found"));
-        final ImageEntity image = imageRepository.findById(link.getImageId())
+        return new VenueCoverStreamDto(
+            new InputStreamResource(minioStorageService.download(image.getObjectKey())),
+            MediaTypeUtil.guessFromFileName(image.getFileName())
+        );
+    }
+
+    @Override
+    @Transactional
+    public void deleteImage(final Long imageId) {
+        final ImageEntity image = imageRepository.findById(imageId)
             .orElseThrow(() -> new NoSuchElementException("image not found"));
+        if (image.isDeleted()) {
+            return;
+        }
+        image.setDeleted(true);
+        image.setUpdatedAt(LocalDateTime.now());
+        imageRepository.save(image);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VenueCoverStreamDto getImageStream(final Long imageId) {
+        final ImageEntity image = imageRepository.findById(imageId)
+            .orElseThrow(() -> new NoSuchElementException("image not found"));
+        if (image.isDeleted()) {
+            throw new NoSuchElementException("image deleted");
+        }
         return new VenueCoverStreamDto(
             new InputStreamResource(minioStorageService.download(image.getObjectKey())),
             MediaTypeUtil.guessFromFileName(image.getFileName())
