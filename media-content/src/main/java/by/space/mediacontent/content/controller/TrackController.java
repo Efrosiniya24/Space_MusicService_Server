@@ -1,6 +1,7 @@
 package by.space.mediacontent.content.controller;
 
 import by.space.mediacontent.content.dto.ImageDto;
+import by.space.mediacontent.content.dto.TrackCoArtistsDto;
 import by.space.mediacontent.content.dto.TrackGenresPatchDto;
 import by.space.mediacontent.content.dto.TrackResponseDto;
 import by.space.mediacontent.content.service.AudioMetadataProbeService;
@@ -38,9 +39,12 @@ public class TrackController {
     private final ImageService imageService;
 
     @PostMapping(value = "/probe-metadata", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> probeMetadata(@RequestParam("file") final MultipartFile file) {
+    public ResponseEntity<?> probeMetadata(
+        @RequestParam("file") final MultipartFile file,
+        @RequestParam(value = "importFolderBasename", required = false) final String importFolderBasename
+    ) {
         try {
-            return ResponseEntity.ok(audioMetadataProbeService.probeUploadedFile(file));
+            return ResponseEntity.ok(audioMetadataProbeService.probeUploadedFile(file, importFolderBasename));
         } catch (final IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         } catch (final InterruptedException ex) {
@@ -67,6 +71,7 @@ public class TrackController {
         @RequestParam(value = "cover", required = false) final MultipartFile cover,
         @RequestParam(value = "durationSeconds", required = false) final Long durationSeconds,
         @RequestParam(value = "genreIds", required = false) final List<Long> genreIds,
+        @RequestParam(value = "genreHints", required = false) final List<String> genreHints,
         @RequestParam("file") final MultipartFile file
     ) {
         try {
@@ -76,7 +81,22 @@ public class TrackController {
                 resolvedCoverId = coverImage.getId();
             }
             return ResponseEntity.ok(trackService.createTrackForArtist(
-                artistId, ownerId, name, resolvedCoverId, durationSeconds, genreIds, file));
+                artistId, ownerId, name, resolvedCoverId, durationSeconds, genreIds, genreHints, file));
+        } catch (final IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/{trackId:\\d+}/co-artists", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> addCoArtists(
+        @PathVariable final Long trackId,
+        @RequestParam("artistId") final Long artistId,
+        @RequestBody(required = false) final TrackCoArtistsDto body
+    ) {
+        try {
+            final List<Long> ids = body != null ? body.getCoArtistIds() : null;
+            trackService.addCoArtistsToTrack(artistId, trackId, ids);
+            return ResponseEntity.noContent().build();
         } catch (final IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }

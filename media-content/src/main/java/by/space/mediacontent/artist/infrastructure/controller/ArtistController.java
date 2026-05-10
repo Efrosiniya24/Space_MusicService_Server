@@ -1,12 +1,14 @@
 package by.space.mediacontent.artist.infrastructure.controller;
 
 import by.space.mediacontent.artist.application.dto.ArtistCreateDto;
+import by.space.mediacontent.artist.application.dto.ArtistEnsureForImportDto;
 import by.space.mediacontent.artist.application.service.ArtistService;
 import by.space.mediacontent.content.dto.ImageDto;
 import by.space.mediacontent.content.service.ImageService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,10 +37,17 @@ public class ArtistController {
         }
     }
 
-    /**
-     * Создание исполнителя с опциональной обложкой (файл сохраняется в MinIO и в таблице изображений).
-     * Если передан {@code cover}, обязателен {@code ownerId} (владелец файла, как в {@code /addImage}).
-     */
+    @PostMapping(value = "/ensure-for-import", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> ensureArtistForImport(@RequestBody(required = false) final ArtistEnsureForImportDto body) {
+        try {
+            final String fromTags = body != null ? body.getNameFromTags() : null;
+            final String fallback = body != null ? body.getFallbackName() : null;
+            return ResponseEntity.ok(artistService.ensureArtistForImport(fromTags, fallback));
+        } catch (final IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
     @PostMapping(value = "/create-with-media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createArtistWithOptionalCover(
         @RequestParam final String name,
@@ -68,9 +77,6 @@ public class ArtistController {
         }
     }
 
-    /**
-     * Обновление исполнителя с опциональной новой обложкой. Поля, не переданные в multipart, сохраняют прежние значения.
-     */
     @PutMapping(value = "/{id:\\d+}/with-media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateArtistWithOptionalCover(
         @PathVariable final Long id,
@@ -138,6 +144,16 @@ public class ArtistController {
             return ResponseEntity.ok(artistService.getArtistById(id));
         } catch (final IllegalArgumentException ex) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id:\\d+}")
+    public ResponseEntity<?> deleteArtist(@PathVariable final Long id) {
+        try {
+            artistService.deleteArtist(id);
+            return ResponseEntity.noContent().build();
+        } catch (final IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 }

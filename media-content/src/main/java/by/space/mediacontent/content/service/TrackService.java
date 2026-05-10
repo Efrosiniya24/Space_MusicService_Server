@@ -18,6 +18,7 @@ public interface TrackService {
         Long idCover,
         Long durationSeconds,
         List<Long> genreIds,
+        List<String> genreHints,
         MultipartFile file
     );
 
@@ -36,6 +37,11 @@ public interface TrackService {
     void removeTrackFromArtist(Long artistId, Long trackId);
     void restoreTrackForArtist(Long artistId, Long trackId);
     void finalizeRemoveTrackFromArtist(Long artistId, Long trackId);
+
+    /**
+     * Дополнительные исполнители трека (feat. и т.д.). У трека уже должна быть активная связь с {@code primaryArtistId}.
+     */
+    void addCoArtistsToTrack(Long primaryArtistId, Long trackId, List<Long> coArtistIds);
 
     Resource streamTrackAudio(Long trackId);
 

@@ -22,6 +22,7 @@ import by.space.mediacontent.content.service.TrackService;
 import by.space.mediacontent.content.util.MediaTypeUtil;
 import by.space.mediacontent.content.util.ObjectKeyGenerator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -38,11 +39,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TrackServiceImpl implements TrackService {
+
+    private static final Pattern DOMAIN_LIKE_GENRE_SPAM = Pattern.compile(
+        "(?i)[a-z0-9][a-z0-9.-]{0,120}\\.[a-z]{2,63}"
+    );
 
     private final TrackRepository trackRepository;
     private final ArtistTrackRepository artistTrackRepository;
@@ -57,6 +66,19 @@ public class TrackServiceImpl implements TrackService {
     @Value("${minio.bucket}")
     private String bucket;
 
+    /** Через запятую: подставить эти id жанров, если клиент не передал ни одного существующего. */
+    @Value("${media.track.default-genre-ids-when-empty:}")
+    private String defaultGenreIdsWhenEmptyRaw;
+
+    /**
+     * Если после этого всё ещё пусто — один жанр с минимальным id из каталога (не удалённый).
+     */
+    @Value("${media.track.assign-first-catalog-genre-if-none:true}")
+    private boolean assignFirstCatalogGenreIfNone;
+
+    @Value("${media.track.create-genres-from-metadata-hints:true}")
+    private boolean createGenresFromMetadataHints;
+
     @Override
     @Transactional
     public TrackResponseDto createTrackForArtist(
@@ -66,6 +88,7 @@ public class TrackServiceImpl implements TrackService {
         final Long idCover,
         final Long durationSeconds,
         final List<Long> genreIds,
+        final List<String> genreHints,
         final MultipartFile file
     ) {
         if (Objects.isNull(file) || file.isEmpty()) {
@@ -117,9 +140,63 @@ public class TrackServiceImpl implements TrackService {
                 .build()
         );
 
-        replaceTrackGenres(track.getId(), genreIds, GenreSource.MANUAL, null, now);
+        replaceTrackGenres(
+            track.getId(),
+            resolveGenreIdsForNewTrack(genreIds, genreHints),
+            GenreSource.MANUAL,
+            null,
+            now
+        );
 
         return toDto(track, false);
+    }
+
+    @Override
+    @Transactional
+    public void addCoArtistsToTrack(
+        final Long primaryArtistId,
+        final Long trackId,
+        final List<Long> coArtistIds
+    ) {
+        if (primaryArtistId == null || trackId == null) {
+            throw new IllegalArgumentException("primaryArtistId and trackId required");
+        }
+        artistTrackRepository.findFirstByArtistIdAndTrackIdAndDeletedFalse(primaryArtistId, trackId)
+            .orElseThrow(() -> new IllegalArgumentException("track not linked to primary artist"));
+        final TrackEntity track = trackRepository.findById(trackId)
+            .filter(t -> !t.isRemoved())
+            .orElseThrow(() -> new IllegalArgumentException("track not found"));
+        if (coArtistIds == null || coArtistIds.isEmpty()) {
+            return;
+        }
+        final LocalDateTime now = LocalDateTime.now();
+        final Set<Long> seen = new LinkedHashSet<>();
+        for (Long aid : coArtistIds) {
+            if (aid == null || aid <= 0 || aid.equals(primaryArtistId)) {
+                continue;
+            }
+            if (!seen.add(aid)) {
+                continue;
+            }
+            final var artist = artistRepository.findById(aid)
+                .orElseThrow(() -> new IllegalArgumentException("artist not found: " + aid));
+            if (artist.isDeleted()) {
+                throw new IllegalArgumentException("artist deleted: " + aid);
+            }
+            if (artistTrackRepository.findFirstByArtistIdAndTrackIdAndDeletedFalse(aid, trackId).isPresent()) {
+                continue;
+            }
+            artistTrackRepository.save(
+                ArtistTrackEntity.builder()
+                    .artistId(aid)
+                    .trackId(trackId)
+                    .deleted(false)
+                    .createdAt(now)
+                    .build()
+            );
+        }
+        track.setUpdatedAt(now);
+        trackRepository.save(track);
     }
 
     @Override
@@ -289,6 +366,127 @@ public class TrackServiceImpl implements TrackService {
         final TrackEntity track = trackRepository.findById(trackId)
             .orElseThrow(() -> new IllegalArgumentException("track not found"));
         return MediaTypeUtil.guessFromFileName(track.getOriginalFileName());
+    }
+
+    private List<Long> parseConfiguredDefaultGenreIds() {
+        if (defaultGenreIdsWhenEmptyRaw == null || defaultGenreIdsWhenEmptyRaw.isBlank()) {
+            return List.of();
+        }
+        return Stream.of(defaultGenreIdsWhenEmptyRaw.split("[,;\\s]+"))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .map(piece -> {
+                try {
+                    return Long.parseLong(piece);
+                } catch (final NumberFormatException ex) {
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
+            .filter(id -> id > 0)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Жанры для нового трека: валидные id с клиента + разрешение строк genreHints (создание в каталоге при необходимости),
+     * затем конфиг, затем первый жанр каталога.
+     */
+    private List<Long> resolveGenreIdsForNewTrack(
+        final List<Long> requested,
+        final List<String> genreHints
+    ) {
+        final LinkedHashSet<Long> out = new LinkedHashSet<>();
+        if (requested != null) {
+            for (Long id : requested) {
+                if (id == null || id <= 0) {
+                    continue;
+                }
+                genreRepository.findById(id).filter(g -> !g.isDeleted()).ifPresent(g -> out.add(id));
+            }
+        }
+        if (createGenresFromMetadataHints && genreHints != null) {
+            for (String hint : genreHints) {
+                if (hint == null || hint.isBlank()) {
+                    continue;
+                }
+                for (String piece : hint.split("[/;,|]+")) {
+                    ensureGenreFromHint(piece).ifPresent(out::add);
+                }
+            }
+        }
+        if (!out.isEmpty()) {
+            return new ArrayList<>(out);
+        }
+        final List<Long> fromConfig = parseConfiguredDefaultGenreIds().stream()
+            .filter(id -> genreRepository.findById(id)
+                .filter(g -> !g.isDeleted())
+                .isPresent())
+            .collect(Collectors.toList());
+        if (!fromConfig.isEmpty()) {
+            return fromConfig;
+        }
+        if (assignFirstCatalogGenreIfNone) {
+            return genreRepository.findFirstByDeletedFalseOrderByIdAsc()
+                .map(g -> List.of(g.getId()))
+                .orElse(List.of());
+        }
+        return List.of();
+    }
+
+    private Optional<Long> ensureGenreFromHint(final String raw) {
+        final String name = normalizeGenreHintName(raw);
+        if (name == null) {
+            return Optional.empty();
+        }
+        if (isLikelyDomainGenreSpam(name)) {
+            return Optional.empty();
+        }
+        final Optional<GenreEntity> active = genreRepository.findFirstByDeletedFalseAndNameIgnoreCase(name);
+        if (active.isPresent()) {
+            return Optional.of(active.get().getId());
+        }
+        final Optional<GenreEntity> softDeleted = genreRepository.findFirstByDeletedTrueAndNameIgnoreCase(name);
+        if (softDeleted.isPresent()) {
+            final GenreEntity g = softDeleted.get();
+            g.setDeleted(false);
+            genreRepository.save(g);
+            log.debug("Restored soft-deleted genre from metadata hint: {}", name);
+            return Optional.of(g.getId());
+        }
+        final GenreEntity saved = genreRepository.save(
+            GenreEntity.builder().name(name).deleted(false).build()
+        );
+        log.debug("Created genre from metadata hint: {}", name);
+        return Optional.of(saved.getId());
+    }
+
+    private static String normalizeGenreHintName(final String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String s = raw.trim();
+        while (s.startsWith("\uFEFF")) {
+            s = s.substring(1).trim();
+        }
+        s = s.replaceAll("\\s+", " ").trim();
+        if (s.isEmpty()) {
+            return null;
+        }
+        if (s.length() > 255) {
+            s = s.substring(0, 255).trim();
+        }
+        return s.isEmpty() ? null : s;
+    }
+
+    private static boolean isLikelyDomainGenreSpam(final String token) {
+        final String t = token.trim();
+        if (t.indexOf(' ') >= 0) {
+            return false;
+        }
+        if (t.chars().allMatch(Character::isDigit)) {
+            return false;
+        }
+        return DOMAIN_LIKE_GENRE_SPAM.matcher(t).matches();
     }
 
     private void replaceTrackGenres(

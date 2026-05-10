@@ -1,5 +1,10 @@
 server:
   port: 8082
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   application:
@@ -36,8 +41,16 @@ eureka:
 
 media:
   ffprobe:
+    # Имя или полный путь; по умолчанию ищется в PATH (Windows/Linux). В Docker см. Dockerfile (apk add ffmpeg).
     executable: ffprobe
     timeout-seconds: 45
+  import:
+    unknown-artist-name: Неизвестный исполнитель
+  track:
+    default-genre-ids-when-empty: ""
+    assign-first-catalog-genre-if-none: true
+    # Строки genreHints при создании трека (из ffprobe/тегов): создать жанр в каталоге, если ещё нет (без дубликата по имени без учёта регистра).
+    create-genres-from-metadata-hints: true
 
 minio:
   url: http://minio:9000

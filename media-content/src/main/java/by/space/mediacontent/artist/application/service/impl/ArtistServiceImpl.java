@@ -3,16 +3,22 @@ package by.space.mediacontent.artist.application.service.impl;
 import by.space.mediacontent.artist.application.dto.ArtistCreateDto;
 import by.space.mediacontent.artist.application.service.ArtistService;
 import by.space.mediacontent.artist.application.service.RoleService;
+import by.space.mediacontent.artist.application.util.ArtistNameSanitizer;
 import by.space.mediacontent.artist.domain.entity.ArtistEntity;
+import by.space.mediacontent.artist.domain.entity.ArtistPlaylistEntity;
 import by.space.mediacontent.artist.domain.entity.ArtistRoleEntity;
+import by.space.mediacontent.artist.domain.entity.ArtistTrackEntity;
 import by.space.mediacontent.artist.domain.enums.ArtistRole;
 import by.space.mediacontent.artist.infrastructure.mapper.ArtistMapper;
+import by.space.mediacontent.artist.infrastructure.repository.ArtistPlaylistRepository;
 import by.space.mediacontent.artist.infrastructure.repository.ArtistRepository;
 import by.space.mediacontent.artist.infrastructure.repository.ArtistRoleRepository;
+import by.space.mediacontent.artist.infrastructure.repository.ArtistTrackRepository;
 import by.space.mediacontent.artist.infrastructure.search.ArtistSearchDocument;
 import by.space.mediacontent.artist.infrastructure.search.ArtistSearchRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +33,15 @@ import java.util.Set;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ArtistServiceImpl implements ArtistService {
+
+    @Value("${media.import.unknown-artist-name:Неизвестный исполнитель}")
+    private String unknownArtistName;
+
     private final ArtistRepository artistRepository;
+    private final ArtistTrackRepository artistTrackRepository;
+    private final ArtistPlaylistRepository artistPlaylistRepository;
     private final ArtistRoleRepository artistRoleRepository;
     private final ArtistMapper artistMapper;
     private final ArtistSearchRepository artistSearchRepository;
@@ -41,6 +53,11 @@ public class ArtistServiceImpl implements ArtistService {
         if (Objects.isNull(artistCreateDto.getName()) || artistCreateDto.getName().isBlank()) {
             throw new IllegalArgumentException("name required");
         }
+        final String cleanedName = ArtistNameSanitizer.sanitizeTagArtistName(artistCreateDto.getName());
+        if (cleanedName.isBlank()) {
+            throw new IllegalArgumentException("name required");
+        }
+        artistCreateDto.setName(cleanedName);
         final ArtistEntity artistToSave = artistMapper.mapToArtistEntity(artistCreateDto);
         artistToSave.setId(null);
         final LocalDateTime now = LocalDateTime.now();
@@ -70,7 +87,11 @@ public class ArtistServiceImpl implements ArtistService {
             throw new IllegalArgumentException("artist deleted");
         }
         if (Objects.nonNull(artistCreateDto.getName()) && !artistCreateDto.getName().isBlank()) {
-            entity.setName(artistCreateDto.getName().trim());
+            final String cleaned = ArtistNameSanitizer.sanitizeTagArtistName(artistCreateDto.getName());
+            if (cleaned.isBlank()) {
+                throw new IllegalArgumentException("name required");
+            }
+            entity.setName(cleaned);
         }
         if (Objects.nonNull(artistCreateDto.getDescription())) {
             entity.setDescription(artistCreateDto.getDescription().trim().isEmpty()
@@ -113,6 +134,50 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
+    @Transactional
+    public void deleteArtist(final Long id) {
+        if (id == null || id <= 0L) {
+            throw new IllegalArgumentException("artist id required");
+        }
+        final ArtistEntity entity = artistRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("artist not found"));
+        if (entity.isDeleted()) {
+            throw new IllegalArgumentException("artist already deleted");
+        }
+        final LocalDateTime now = LocalDateTime.now();
+
+        for (ArtistTrackEntity link : artistTrackRepository.findByArtistIdOrderByIdAsc(id)) {
+            if (link.isDeleted()) {
+                continue;
+            }
+            link.setDeleted(true);
+            link.setDeletedAt(now);
+            artistTrackRepository.save(link);
+        }
+        for (ArtistPlaylistEntity link : artistPlaylistRepository.findByArtistIdOrderByIdAsc(id)) {
+            if (link.isDeleted()) {
+                continue;
+            }
+            link.setDeleted(true);
+            link.setDeletedAt(now);
+            artistPlaylistRepository.save(link);
+        }
+
+        entity.setDeleted(true);
+        entity.setUpdatedAt(now);
+        artistRepository.save(entity);
+        try {
+            artistSearchRepository.save(ArtistSearchDocument.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .deleted(true)
+                .build());
+        } catch (final Exception ex) {
+            log.warn("Could not update artist index after delete: {}", ex.toString());
+        }
+    }
+
+    @Override
     public List<ArtistCreateDto> searchArtists(final String query) {
         if (query == null || query.trim().isEmpty()) {
             return getAllArtists();
@@ -144,6 +209,31 @@ public class ArtistServiceImpl implements ArtistService {
                 .map(this::mapArtistDtoWithRoles)
                 .toList();
         }
+    }
+
+    @Override
+    @Transactional
+    public ArtistCreateDto ensureArtistForImport(final String nameFromTags, final String fallbackName) {
+        final String fallbackBase = resolveImportFallback(fallbackName);
+        final String fbSanitized = ArtistNameSanitizer.sanitizeTagArtistName(fallbackBase);
+        final String fallback = fbSanitized.isBlank() ? fallbackBase : fbSanitized;
+
+        final String tagSanitized = ArtistNameSanitizer.sanitizeTagArtistName(
+            nameFromTags == null ? "" : nameFromTags.trim()
+        );
+        final String resolved = tagSanitized.isBlank() ? fallback : tagSanitized;
+        return artistRepository.findFirstByDeletedFalseAndNameEqualsIgnoreCase(resolved)
+            .map(this::mapArtistDtoWithRoles)
+            .orElseGet(() -> createArtist(ArtistCreateDto.builder().name(resolved).build()));
+    }
+
+    private String resolveImportFallback(final String fallbackNameOverride) {
+        if (fallbackNameOverride != null && !fallbackNameOverride.isBlank()) {
+            return fallbackNameOverride.trim();
+        }
+        return unknownArtistName == null || unknownArtistName.isBlank()
+            ? "Неизвестный исполнитель"
+            : unknownArtistName.trim();
     }
 
     private ArtistCreateDto mapArtistDtoWithRoles(final ArtistEntity entity) {

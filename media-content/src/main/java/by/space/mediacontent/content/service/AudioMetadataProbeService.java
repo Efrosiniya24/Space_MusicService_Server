@@ -1,6 +1,8 @@
 package by.space.mediacontent.content.service;
 
+import by.space.mediacontent.artist.application.util.ArtistNameSanitizer;
 import by.space.mediacontent.content.dto.AudioFileMetadataDto;
+import by.space.mediacontent.content.util.Id3v1GenreNames;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +25,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
 public class AudioMetadataProbeService {
+
+    /** Одно слово вида «site.tld» в поле genre часто — реклама заливщика, не музыкальный жанр. */
+    private static final Pattern DOMAIN_LIKE_GENRE_SPAM = Pattern.compile(
+        "(?i)[a-z0-9][a-z0-9.-]{0,120}\\.[a-z]{2,63}"
+    );
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -37,6 +45,18 @@ public class AudioMetadataProbeService {
     private int timeoutSeconds;
 
     public AudioFileMetadataDto probeUploadedFile(final MultipartFile file)
+        throws IOException, InterruptedException {
+        return probeUploadedFile(file, null);
+    }
+
+    /**
+     * @param importFolderBasename необязательно: базовое имя каталога импорта (напр. {@code баста}),
+     *                             для согласования с префиксом исполнителя в имени файла
+     */
+    public AudioFileMetadataDto probeUploadedFile(
+        final MultipartFile file,
+        final String importFolderBasename
+    )
         throws IOException, InterruptedException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("file required");
@@ -49,7 +69,8 @@ public class AudioMetadataProbeService {
             try (InputStream in = file.getInputStream()) {
                 Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
             }
-            return probe(tmp);
+            final AudioFileMetadataDto raw = probe(tmp);
+            return FilenameProbeAugmentation.augment(raw, orig, importFolderBasename);
         } finally {
             if (tmp != null) {
                 try {
@@ -150,8 +171,8 @@ public class AudioMetadataProbeService {
         );
 
         final Set<String> genrePieces = new LinkedHashSet<>();
-        addSplitGenres(genrePieces, tags.get("genre"));
-        addSplitGenres(genrePieces, tags.get("tcon"));
+        collectGenresFromTags(tags, genrePieces);
+        Id3v1GenreNames.expandNumericTokens(genrePieces);
 
         Long durationSeconds = null;
         final String durStr = tags.get("__duration_seconds");
@@ -167,7 +188,7 @@ public class AudioMetadataProbeService {
         }
 
         return AudioFileMetadataDto.builder()
-            .artist(blankToNull(artist))
+            .artist(blankToNull(ArtistNameSanitizer.sanitizeTagArtistName(artist != null ? artist : "")))
             .title(blankToNull(title))
             .album(blankToNull(album))
             .genres(new ArrayList<>(genrePieces))
@@ -182,6 +203,40 @@ public class AudioMetadataProbeService {
         tags.putIfAbsent("__duration_seconds", durationText.trim());
     }
 
+    /**
+     * ID3 иногда отдаёт UTF-8 байты как ISO-8859-1; в JSON это строка «искажённой» латиницы без кириллицы.
+     * Перечитываем как UTF-8 только если результат содержит кириллицу и без явной порчи.
+     */
+    private static String repairUtf8MisreadAsLatin1(final String input) {
+        if (input == null || input.isBlank()) {
+            return input;
+        }
+        if (containsCyrillicLetter(input)) {
+            return input;
+        }
+        try {
+            final byte[] raw = input.getBytes(StandardCharsets.ISO_8859_1);
+            final String repaired = new String(raw, StandardCharsets.UTF_8);
+            if (!containsCyrillicLetter(repaired)) {
+                return input;
+            }
+            final long replacementChars = repaired.codePoints().filter(cp -> cp == 0xFFFD).count();
+            if (replacementChars > 1L) {
+                return input;
+            }
+            return repaired;
+        } catch (final Exception ignored) {
+            return input;
+        }
+    }
+
+    private static boolean containsCyrillicLetter(final String s) {
+        return s.codePoints().anyMatch(cp ->
+            (cp >= 0x0400 && cp <= 0x04FF)
+                || (cp >= 0x0500 && cp <= 0x052F)
+        );
+    }
+
     private static void mergeTags(final JsonNode tagsNode, final Map<String, String> into) {
         if (tagsNode == null || !tagsNode.isObject()) {
             return;
@@ -194,7 +249,10 @@ public class AudioMetadataProbeService {
             if (v.isTextual()) {
                 final String text = v.asText();
                 if (text != null && !text.isBlank()) {
-                    into.put(entry.getKey().toLowerCase(Locale.ROOT), text.trim());
+                    into.put(
+                        entry.getKey().toLowerCase(Locale.ROOT),
+                        repairUtf8MisreadAsLatin1(text.trim())
+                    );
                 }
                 return;
             }
@@ -205,6 +263,34 @@ public class AudioMetadataProbeService {
                 );
             }
         });
+    }
+
+    /**
+     * Жанр в ffprobe может лежать под разными ключами (MP3, MP4/©gen, WMA, iTunes freeform, ICY).
+     */
+    private static void collectGenresFromTags(final Map<String, String> tags, final Set<String> genrePieces) {
+        addSplitGenres(genrePieces, tags.get("genre"));
+        addSplitGenres(genrePieces, tags.get("tcon"));
+        addSplitGenres(genrePieces, tags.get("wm/genre"));
+        addSplitGenres(genrePieces, tags.get("\u00a9gen"));
+        addSplitGenres(genrePieces, tags.get("----:com.apple.itunes:genre"));
+        addSplitGenres(genrePieces, tags.get("icy-genre"));
+        addSplitGenres(genrePieces, tags.get("musicbrainz_genre"));
+        for (final Map.Entry<String, String> e : tags.entrySet()) {
+            final String k = e.getKey();
+            final String v = e.getValue();
+            if (v == null || v.isBlank()) {
+                continue;
+            }
+            if ("genre".equals(k) || "tcon".equals(k) || "wm/genre".equals(k)
+                || "\u00a9gen".equals(k) || "----:com.apple.itunes:genre".equals(k) || "icy-genre".equals(k)
+                || "musicbrainz_genre".equals(k)) {
+                continue;
+            }
+            if (k.endsWith(":genre") || k.endsWith("/genre")) {
+                addSplitGenres(genrePieces, v);
+            }
+        }
     }
 
     private static void addSplitGenres(final Set<String> out, final String raw) {
@@ -228,10 +314,21 @@ public class AudioMetadataProbeService {
     private static void splitGenreTokens(final Set<String> out, final String s) {
         for (final String piece : s.split("[/;,|]+")) {
             final String t = piece.trim();
-            if (!t.isEmpty()) {
+            if (!t.isEmpty() && !isLikelyDomainLikeGenreSpam(t)) {
                 out.add(t);
             }
         }
+    }
+
+    private static boolean isLikelyDomainLikeGenreSpam(final String token) {
+        final String t = token.trim();
+        if (t.indexOf(' ') >= 0) {
+            return false;
+        }
+        if (t.chars().allMatch(Character::isDigit)) {
+            return false;
+        }
+        return DOMAIN_LIKE_GENRE_SPAM.matcher(t).matches();
     }
 
     private static String firstNonBlank(final String... values) {

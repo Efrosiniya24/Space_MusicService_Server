@@ -20,4 +20,16 @@ public interface ArtistService {
     List<ArtistCreateDto> searchArtists(String query);
 
     ArtistCreateDto getArtistById(Long id);
+
+    /**
+     * Помечает исполнителя удалённым (не показывается в каталоге).
+     * Если есть связанные треки или альбомы — исключение.
+     */
+    void deleteArtist(Long id);
+
+    /**
+     * Импорт каталога: вернуть существующего неудалённого артиста с таким именем (без учёта регистра)
+     * или создать нового. Если имя из тегов пустое — используется {@code fallbackName} или имя из конфигурации.
+     */
+    ArtistCreateDto ensureArtistForImport(String nameFromTags, String fallbackName);
 }
